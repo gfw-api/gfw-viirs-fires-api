@@ -1,0 +1,17 @@
+{
+    "logger": {
+        "name": "gfw-viirs-fires-api-DEV",
+        "level": "debug",
+        "toFile": false,
+        "dirLogFile": null
+    },
+    "service": {
+        "id": "gfw-viirs-fires-api_1.0.0",
+        "name": "GFW Fires API",
+        "port": 3600
+    },
+    "cartoDB":{
+        "apiKey": null,
+        "user": null
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "logger": {
+        "name": "gfw-viirs-fires-api-TEST",
+        "level": "debug",
+        "toFile": false,
+        "dirLogFile": null
+    }
+}
