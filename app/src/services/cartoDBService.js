@@ -12,7 +12,7 @@ const WORLD = 'SELECT COUNT(pt.*) AS value\
         WHERE acq_date >= \'{{begin}}\'\
             AND acq_date <= \'{{end}}\'\
             AND ST_INTERSECTS(\
-                ST_SetSRID(ST_GeomFromGeoJSON(\'{{geojson}}\'), 4326), the_geom)\
+                ST_SetSRID(ST_GeomFromGeoJSON(\'{{{geojson}}}\'), 4326), the_geom)\
             AND confidence=\'nominal\'';
 
 const ISO = 'SELECT COUNT(pt.*) AS value \
@@ -166,15 +166,19 @@ class CartoDBService {
     * getWorld(hashGeoStore, period = defaultDate()) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
 
-        let geostore = yield CartoDBService.getGeostore(hashGeoStore);
-        logger.debug('Executing query in cartodb');
+        let geostore = yield this.getGeostore(hashGeoStore);
+        logger.debug('Executing query in cartodb with geostore', geostore);
         let periods = period.split(',');
-        let data = yield executeThunk(this.client, WORLD, {
-            geostore: JSON.stringify(geostore),
-            begin: periods[0],
-            end: periods[1]
-        });
-        return data.rows;
+        try{
+            let data = yield executeThunk(this.client, WORLD, {
+                geojson: JSON.stringify(geostore),
+                begin: periods[0],
+                end: periods[1]
+            });
+            return data.rows;
+        }catch(err){
+            logger.error(err);
+        }
     }
 
 }

@@ -2,60 +2,39 @@
     "id": "#(service.id)",
     "name": "#(service.name)",
     "urls": [{
-        "url": "/umd-loss-gain/admin/ifl/:iso",
+        "url": "/viirs-active-fires/admin/:iso",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain/admin/ifl/:iso"
-        }]
-    },{
-        "url": "/umd-loss-gain/admin/ifl/:iso/:id1",
-        "method": "GET",
-        "endpoints": [{
-            "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain/admin/ifl/:iso/:id1"
-        }]
-    },{
-        "url": "/umd-loss-gain/admin/:iso",
-        "method": "GET",
-        "endpoints": [{
-            "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain/admin/:iso"
+            "path": "/api/v1/viirs-active-fires/admin/:iso"
         }]
     }, {
-        "url": "/umd-loss-gain/admin/:iso/:id1",
+        "url": "/viirs-active-fires/admin/:iso/:id1",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain/admin/:iso/:id1"
+            "path": "/api/v1/viirs-active-fires/admin/:iso/:id1"
         }]
     }, {
-        "url": "/umd-loss-gain/use/:name/:id",
+        "url": "/viirs-active-fires/use/:name/:id",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain/use/:name/:id"
+            "path": "/api/v1/viirs-active-fires/use/:name/:id"
         }]
     }, {
-        "url": "/umd-loss-gain/wdpa/:id",
+        "url": "/viirs-active-fires/wdpa/:id",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain/wdpa/:id"
+            "path": "/api/v1/viirs-active-fires/wdpa/:id"
         }]
     }, {
-        "url": "/umd-loss-gain",
+        "url": "/viirs-active-fires",
         "method": "GET",
         "endpoints": [{
             "method": "GET",
-            "baseUrl": "#(service.uri)",
-            "path": "/api/v1/umd-loss-gain"
+            "path": "/api/v1/viirs-active-fires"
         }]
     }]
 }

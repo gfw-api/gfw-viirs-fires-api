@@ -61,7 +61,7 @@ class ViirsFiresRouter {
 
     static * world() {
         logger.info('Obtaining world data');
-        this.assert(this.query.geojson, 400, 'GeoJSON param required');
+        this.assert(this.query.geostore, 400, 'GeoJSON param required');
         let data = yield CartoDBService.getWorld(this.query.geostore, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
     }
