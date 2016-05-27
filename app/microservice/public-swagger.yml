@@ -19,7 +19,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - UMD
+        - VIIRS-FIRES
       parameters:
         - name: geostore
           in: query
@@ -55,7 +55,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - UMD
+        - VIIRS-FIRES
       parameters:
         - name: name
           in: path
@@ -96,7 +96,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - UMD
+        - VIIRS-FIRES
       parameters:
         - name: id
           in: path
@@ -133,7 +133,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - UMD
+        - VIIRS-FIRES
       parameters:
         - name: iso
           in: path
@@ -170,7 +170,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - UMD
+        - VIIRS-FIRES
       parameters:
         - name: iso
           in: path
