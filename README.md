@@ -4,7 +4,7 @@
 This repository is the microservice that it implement the viirs fires funcionality and exposed the /viirs-active-fires endpoint in the api-gateway
 
 [View the documentation for this
-API](http://gfw-api.github.io/swagger-ui/?url=https://raw.githubusercontent.com/gfw-api/gfw-viirs-fires-api/master/app/microservice/swagger.yml#/UMD)
+API](http://gfw-api.github.io/swagger-ui/?url=https://raw.githubusercontent.com/gfw-api/gfw-viirs-fires-api/master/app/microservice/swagger.yml#/VIIRS-FIRES)
 
 ## First time user
 Perform the following steps:
