@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  title: GFW UMD Forest API
-  description: Global Forest Watch - UMD Forest API
+  title: GFW Viirs Fires Forest API
+  description: Global Forest Watch - Viirs Fires Forest API
   version: "1.0.0"
 host: example.vizzuality.com
 
@@ -13,9 +13,8 @@ produces:
   - application/vnd.api+json
 
 paths:
-  /umd-loss-gain:
+  /viirs-active-fires:
     get:
-      description: a
       operationId: world
       produces:
         - application/vnd.api+json
@@ -29,19 +28,14 @@ paths:
           type: string
         - name: period
           in: query
-          description: Period of time (default '2001-01-01,2013-01-01')
+          description: Period of time (default last day)
           required: true
           type: string
-        - name: thresh
-          in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
       responses:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/USEAPI'
+            $ref: '#/definitions/VIIRSFIRESAPI'
         404:
           description: Geostore not found
           schema:
@@ -55,9 +49,8 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /umd-loss-gain/use/{name}/{id}:
+  /viirs-active-fires/use/{name}/{id}:
     get:
-      description: a
       operationId: use
       produces:
         - application/vnd.api+json
@@ -76,19 +69,14 @@ paths:
           type: integer
         - name: period
           in: query
-          description: Period of time (default '2001-01-01,2013-01-01')
+          description: Period of time (default last day)
           required: true
           type: string
-        - name: thresh
-          in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
       responses:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/USEAPI'
+            $ref: '#/definitions/VIIRSFIRESAPI'
         404:
           description: Geostore not found
           schema:
@@ -102,9 +90,8 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /umd-loss-gain/wdpa/{id}:
+  /viirs-active-fires/wdpa/{id}:
     get:
-      description: a
       operationId: wdpa
       produces:
         - application/vnd.api+json
@@ -118,19 +105,14 @@ paths:
           type: integer
         - name: period
           in: query
-          description: Period of time (default '2001-01-01,2013-01-01')
+          description: Period of time (default last day)
           required: true
           type: string
-        - name: thresh
-          in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
       responses:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/USEAPI'
+            $ref: '#/definitions/VIIRSFIRESAPI'
         404:
           description: Geostore not found
           schema:
@@ -144,7 +126,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /umd-loss-gain/admin/{iso}:
+  /viirs-active-fires/admin/{iso}:
     get:
       description: a
       operationId: getNational
@@ -158,16 +140,16 @@ paths:
           description: ISO code
           required: true
           type: string
-        - name: thresh
+        - name: period
           in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
+          description: Period of time (default last day)
+          required: true
+          type: string
       responses:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/UMDAPI'
+            $ref: '#/definitions/VIIRSFIRESAPI'
         404:
           description: Geostore not found
           schema:
@@ -181,7 +163,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /umd-loss-gain/admin/{iso}/{id1}:
+  /viirs-active-fires/admin/{iso}/{id1}:
     get:
       description: a
       operationId: getSubnational
@@ -200,16 +182,16 @@ paths:
           description: Region code
           required: true
           type: integer
-        - name: thresh
+        - name: period
           in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
+          description: Period of time (default last day)
+          required: true
+          type: string
       responses:
         200:
           description: Results obtained
           schema:
-            $ref: '#/definitions/UMDAPI'
+            $ref: '#/definitions/VIIRSFIRESAPI'
         404:
           description: Geostore not found
           schema:
@@ -223,84 +205,7 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
-  /umd-loss-gain/admin/ifl/{iso}:
-    get:
-      description: a
-      operationId: getIFLNational
-      produces:
-        - application/vnd.api+json
-      tags:
-        - UMD
-      parameters:
-        - name: iso
-          in: path
-          description: ISO code
-          required: true
-          type: string
-        - name: thresh
-          in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
-      responses:
-        200:
-          description: Results obtained
-          schema:
-            $ref: '#/definitions/UMDIFLAPI'
-        404:
-          description: Geostore not found
-          schema:
-            $ref: '#/definitions/Errors'
-        500:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Errors'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Errors'
 
-  /umd-loss-gain/admin/ifl/{iso}/{id1}:
-    get:
-      description: a
-      operationId: getIFLSubnational
-      produces:
-        - application/vnd.api+json
-      tags:
-        - UMD
-      parameters:
-        - name: iso
-          in: path
-          description: ISO code
-          required: true
-          type: string
-        - name: id1
-          in: path
-          description: Region code
-          required: true
-          type: integer
-        - name: thresh
-          in: query
-          description: Threshold (default 30)
-          required: false
-          type: integer
-      responses:
-        200:
-          description: Results obtained
-          schema:
-            $ref: '#/definitions/UMDIFLAPI'
-        404:
-          description: Geostore not found
-          schema:
-            $ref: '#/definitions/Errors'
-        500:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Errors'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Errors'
 definitions:
   Errors:
     type: object
@@ -351,15 +256,15 @@ definitions:
         type: object
         description: A meta object containing non-standard meta-information about the error.
 
-  USEAPI:
+  VIIRSFIRESAPI:
     type: object
     properties:
       data:
-        type: array
-        items:
-          $ref: '#/definitions/UMDBodyAPI'
+        properties:
+          $schema:
+            $ref: '#/definitions/VIIRSFIRESBody'
 
-  USEBodyAPI:
+  VIIRSFIRESBody:
     type: object
     properties:
       type:
@@ -371,119 +276,13 @@ definitions:
       attributes:
         properties:
           schema:
-            $ref: '#/definitions/USEAPIModel'
+            $ref: '#/definitions/VIIRSFIRESModel'
 
-  USEAPIModel:
+  VIIRSFIRESModel:
     type: object
     properties:
-      loss:
+      value:
         type: number
         format: float
-      gain:
-        type: number
-        format: float
-      treeExtent:
-        type: number
-        format: float
-
-  UMDAPI:
-    type: object
-    properties:
-      data:
-        type: array
-        items:
-          $ref: '#/definitions/UMDBodyAPI'
-
-  UMDBodyAPI:
-    type: object
-    properties:
-      type:
+      period:
         type: string
-        description: Resource type
-      id:
-        type: string
-        description: Resource id
-      attributes:
-        properties:
-          schema:
-            $ref: '#/definitions/UMDAPIModel'
-
-  UMDAPIModel:
-    type: object
-    properties:
-      iso:
-        type: string
-      country:
-        type: string
-      thresh:
-        type: integer
-      year:
-        type: integer
-      id1:
-        type: integer
-      extent:
-        type: number
-        format: float
-      extent_perc:
-        type: number
-        format: float
-      loss:
-        type: number
-        format: float
-      loss_perc:
-        type: number
-        format: float
-      gain:
-        type: number
-        format: float
-      total_gain:
-        type: number
-        format: float
-      gain_perc:
-        type: number
-        format: float
-
-  UMDIFLAPI:
-    type: object
-    properties:
-      data:
-        type: array
-        items:
-          $ref: '#/definitions/UMDIFLBodyAPI'
-
-  UMDIFLBodyAPI:
-    type: object
-    properties:
-      type:
-        type: string
-        description: Resource type
-      id:
-        type: string
-        description: Resource id
-      attributes:
-        properties:
-          schema:
-            $ref: '#/definitions/UMDIFLAPIModel'
-
-  UMDIFLAPIModel:
-    type: object
-    properties:
-      iso:
-        type: string
-      country:
-        type: string
-      threshold:
-        type: integer
-      year:
-        type: integer
-      id1:
-        type: integer
-      ifl_loss:
-        type: number
-        format: float
-      ifl_loss_perc:
-        type: number
-        format: float
-      ifl_treecover_2000:
-        type: number
-        format: float
