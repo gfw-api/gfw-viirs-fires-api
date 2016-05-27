@@ -68,9 +68,11 @@ var executeThunk = function(client, sql, params) {
     };
 };
 
-var deserializer = function(obj){
-    return function(callback){
-        new JSONAPIDeserializer({keyForAttribute: 'camelCase'}).deserialize(obj, callback);
+var deserializer = function(obj) {
+    return function(callback) {
+        new JSONAPIDeserializer({
+            keyForAttribute: 'camelCase'
+        }).deserialize(obj, callback);
     };
 };
 
@@ -101,6 +103,22 @@ class CartoDBService {
         });
     }
 
+    getPeriodText(period) {
+        let periods = period.split(',');
+        let days = (new Date(periods[1]) - new Date(periods[0])) / (24 * 60 * 60 * 1000);
+
+        switch (days) {
+            case 1:
+                return 'Past 24 hours';
+            case 2:
+                return 'Past 48 hours';
+            case 3:
+                return 'Past 72 hours';
+            default:
+                return 'Past week';
+        }
+    }
+
     * getNational(iso, period = defaultDate()) {
         logger.debug('Obtaining national of iso %s', iso);
         let periods = period.split(',');
@@ -109,7 +127,12 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         });
-        return data.rows;
+        if (data.rows && data.rows.length > 0) {
+            let result = data.rows[0];
+            result.period = this.getPeriodText(period);
+            return result;
+        }
+        return null;
     }
 
     * getSubnational(iso, id1, period = defaultDate()) {
@@ -121,7 +144,12 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         });
-        return data.rows;
+        if (data.rows && data.rows.length > 0) {
+            let result = data.rows[0];
+            result.period = this.getPeriodText(period);
+            return result;
+        }
+        return null;
     }
 
     * getUse(useTable, id, period = defaultDate()) {
@@ -134,7 +162,12 @@ class CartoDBService {
             end: periods[1]
         });
 
-        return data.rows[0];
+        if (data.rows && data.rows.length > 0) {
+            let result = data.rows[0];
+            result.period = this.getPeriodText(period);
+            return result;
+        }
+        return null;
     }
 
     * getWdpa(wdpaid, period = defaultDate()) {
@@ -145,10 +178,15 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         });
-        return data.rows;
+        if (data.rows && data.rows.length > 0) {
+            let result = data.rows[0];
+            result.period = this.getPeriodText(period);
+            return result;
+        }
+        return null;
     }
 
-    * getGeostore(hashGeoStore){
+    * getGeostore(hashGeoStore) {
         logger.debug('Obtaining geostore with hash %s', hashGeoStore);
         let result = yield require('microservice-client').requestToMicroservice({
             uri: '/geostore/' + hashGeoStore,
@@ -167,18 +205,22 @@ class CartoDBService {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
 
         let geostore = yield this.getGeostore(hashGeoStore);
-        logger.debug('Executing query in cartodb with geostore', geostore);
-        let periods = period.split(',');
-        try{
+        if (geostore && geostore.geojson) {
+            logger.debug('Executing query in cartodb with geostore', geostore);
+            let periods = period.split(',');
             let data = yield executeThunk(this.client, WORLD, {
-                geojson: JSON.stringify(geostore),
+                geojson: JSON.stringify(geostore.geojson.features[0].geometry),
                 begin: periods[0],
                 end: periods[1]
             });
-            return data.rows;
-        }catch(err){
-            logger.error(err);
+            if (data.rows && data.rows.length > 0) {
+                let result = data.rows[0];
+                result.period = this.getPeriodText(period);
+                return result;
+            }
+            return null;
         }
+        throw new NotFound('Geostore not found');
     }
 
 }

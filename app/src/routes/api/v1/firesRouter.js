@@ -21,7 +21,6 @@ class ViirsFiresRouter {
 
     static * getSubnational() {
         logger.info('Obtaining subnational data');
-        this.assert(this.query.thresh, 400, 'thresh param required');
         let data = yield CartoDBService.getSubnational(this.params.iso, this.params.id1, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
     }
@@ -62,8 +61,18 @@ class ViirsFiresRouter {
     static * world() {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
-        let data = yield CartoDBService.getWorld(this.query.geostore, this.query.period);
-        this.body = ViirsFiresSerializer.serialize(data);
+        try{
+            let data = yield CartoDBService.getWorld(this.query.geostore, this.query.period);
+
+            this.body = ViirsFiresSerializer.serialize(data);
+        } catch(err){
+            if(err instanceof NotFound){
+                this.throw(404, 'Geostore not found');
+                return;
+            }
+            throw err;
+        }
+
     }
 
 }
