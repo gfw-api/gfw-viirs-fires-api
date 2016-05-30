@@ -71,7 +71,6 @@ var executeThunk = function(client, sql, params) {
 var deserializer = function(obj) {
     return function(callback) {
         new JSONAPIDeserializer({
-            keyForAttribute: 'camelCase'
         }).deserialize(obj, callback);
     };
 };
