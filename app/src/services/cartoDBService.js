@@ -38,7 +38,7 @@ const ID1 = 'SELECT COUNT(pt.*) AS value \
 
 const USE = 'SELECT COUNT(pt.*) AS value \
         FROM vnp14imgtdl_nrt_global_7d pt, \
-            (SELECT * FROM {{use_table}} WHERE cartodb_id = {{pid}}) as p \
+            (SELECT * FROM {{useTable}} WHERE cartodb_id = {{pid}}) as p \
         WHERE ST_Intersects(pt.the_geom, p.the_geom) \
             AND acq_date >= \'{{begin}}\' \
             AND acq_date <= \'{{end}}\' \
