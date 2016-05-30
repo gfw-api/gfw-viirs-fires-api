@@ -98,9 +98,9 @@ class CartoDBService {
 
     constructor() {
         this.client = new CartoDB.SQL({
-            user: config.get('cartoDB.user'),
-            api_key: config.get('cartoDB.apiKey')
+            user: config.get('cartoDB.user')
         });
+        this.apiUrl = config.get('cartoDB.apiUrl');
     }
 
     getPeriodText(period) {
@@ -119,17 +119,32 @@ class CartoDBService {
         }
     }
 
+    getDownloadUrls(query, params) {
+        try{
+            let formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
+            let download = {};
+            for(let i=0, length = formats.length; i < length; i++){
+                download[formats[i]] = this.apiUrl + '?q=' + encodeURIComponent(Mustache.render(query, params)) + '&format=' + formats[i];
+            }
+            return download;
+        }catch(err){
+            logger.error(err);
+        }
+    }
+
     * getNational(iso, period = defaultDate()) {
         logger.debug('Obtaining national of iso %s', iso);
         let periods = period.split(',');
-        let data = yield executeThunk(this.client, ISO, {
+        var params = {
             iso: iso,
             begin: periods[0],
             end: periods[1]
-        });
+        };
+        let data = yield executeThunk(this.client, ISO, params);
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
+            result.downloadUrls = this.getDownloadUrls(ISO, params);
             return result;
         }
         return null;
@@ -138,15 +153,17 @@ class CartoDBService {
     * getSubnational(iso, id1, period = defaultDate()) {
         logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
         let periods = period.split(',');
-        let data = yield executeThunk(this.client, ID1, {
+        let params = {
             iso: iso,
             id1: id1,
             begin: periods[0],
             end: periods[1]
-        });
+        };
+        let data = yield executeThunk(this.client, ID1, params);
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
+            result.downloadUrls = this.getDownloadUrls(ID1, params);
             return result;
         }
         return null;
@@ -155,16 +172,18 @@ class CartoDBService {
     * getUse(useTable, id, period = defaultDate()) {
         logger.debug('Obtaining use with id %s', id);
         let periods = period.split(',');
-        let data = yield executeThunk(this.client, USE, {
+        let params = {
             useTable: useTable,
             pid: id,
             begin: periods[0],
             end: periods[1]
-        });
+        };
+        let data = yield executeThunk(this.client, USE, params);
 
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
+            result.downloadUrls = this.getDownloadUrls(USE, params);
             return result;
         }
         return null;
@@ -173,14 +192,16 @@ class CartoDBService {
     * getWdpa(wdpaid, period = defaultDate()) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
         let periods = period.split(',');
-        let data = yield executeThunk(this.client, WDPA, {
+        let params = {
             wdpaid: wdpaid,
             begin: periods[0],
             end: periods[1]
-        });
+        };
+        let data = yield executeThunk(this.client, WDPA, params);
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
+            result.downloadUrls = this.getDownloadUrls(WDPA, params);
             return result;
         }
         return null;
@@ -208,14 +229,16 @@ class CartoDBService {
         if (geostore && geostore.geojson) {
             logger.debug('Executing query in cartodb with geostore', geostore);
             let periods = period.split(',');
-            let data = yield executeThunk(this.client, WORLD, {
+            let params = {
                 geojson: JSON.stringify(geostore.geojson.features[0].geometry),
                 begin: periods[0],
                 end: periods[1]
-            });
+            };
+            let data = yield executeThunk(this.client, WORLD, params);
             if (data.rows && data.rows.length > 0) {
                 let result = data.rows[0];
                 result.period = this.getPeriodText(period);
+                result.downloadUrls = this.getDownloadUrls(WORLD, params);
                 return result;
             }
             return null;

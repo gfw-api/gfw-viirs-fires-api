@@ -286,3 +286,16 @@ definitions:
         format: float
       period:
         type: string
+      download-urls:
+        type: object
+        properties:
+          csv:
+            type: string
+          geojson:
+            type: string
+          kml:
+            type: string
+          shp:
+            type: string
+          svg:
+            type: string

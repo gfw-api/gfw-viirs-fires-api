@@ -3,11 +3,13 @@
 var logger = require('logger');
 var JSONAPISerializer = require('jsonapi-serializer').Serializer;
 var viirsFiresSerializer = new JSONAPISerializer('viirs-fires', {
-    attributes: ['value', 'period'],
+    attributes: ['value', 'period', 'downloadUrls'],
     typeForAttribute: function (attribute, record) {
         return attribute;
     },
-    keyForAttribute: 'camelCase'
+    downloadUrls:{
+        attributes: ['csv', 'geojson', 'kml', 'shp', 'svg']
+    }
 });
 
 class ViirsFiresSerializer {
