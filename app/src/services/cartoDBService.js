@@ -7,54 +7,54 @@ var Mustache = require('mustache');
 var NotFound = require('errors/notFound');
 var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
-const WORLD = 'SELECT COUNT(pt.*) AS value\
-        FROM vnp14imgtdl_nrt_global_7d pt\
-        WHERE acq_date >= \'{{begin}}\'\
-            AND acq_date <= \'{{end}}\'\
-            AND ST_INTERSECTS(\
-                ST_SetSRID(ST_GeomFromGeoJSON(\'{{{geojson}}}\'), 4326), the_geom)\
-            AND confidence=\'nominal\'';
+const WORLD = `SELECT COUNT(pt.*) AS value
+        FROM vnp14imgtdl_nrt_global_7d pt
+        WHERE acq_date >= '{{begin}}'
+            AND acq_date <= '{{end}}'
+            AND ST_INTERSECTS(
+                ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), the_geom)
+            AND confidence='nominal' `;
 
-const ISO = 'SELECT COUNT(pt.*) AS value \
-        FROM vnp14imgtdl_nrt_global_7d pt, \
-            (SELECT  * \
-            FROM gadm2_countries_simple \
-            WHERE iso = UPPER(\'{{iso}}\')) as p \
-        WHERE ST_Intersects(pt.the_geom, p.the_geom) \
-            AND acq_date >= \'{{begin}}\' \
-            AND acq_date <= \'{{end}}\' \
-            AND confidence=\'nominal\' ';
+const ISO = `SELECT COUNT(pt.*) AS value
+        FROM vnp14imgtdl_nrt_global_7d pt,
+            (SELECT  *
+            FROM gadm2_countries_simple
+            WHERE iso = UPPER('{{iso}}')) as p
+        WHERE ST_Intersects(pt.the_geom, p.the_geom)
+            AND acq_date >= '{{begin}}'
+            AND acq_date <= '{{end}}'
+            AND confidence='nominal' `;
 
-const ID1 = 'SELECT COUNT(pt.*) AS value \
-        FROM vnp14imgtdl_nrt_global_7d pt, \
-             (SELECT * \
-             FROM gadm2_provinces_simple \
-             WHERE iso = UPPER(\'{{iso}}\') \
-                   AND id_1 = {{id1}}) as p \
-        WHERE ST_Intersects(pt.the_geom, p.the_geom) \
-            AND acq_date >= \'{{begin}}\' \
-            AND acq_date <= \'{{end}}\' \
-            AND confidence=\'nominal\' ';
+const ID1 = `SELECT COUNT(pt.*) AS value
+        FROM vnp14imgtdl_nrt_global_7d pt,
+             (SELECT *
+             FROM gadm2_provinces_simple
+             WHERE iso = UPPER('{{iso}}')
+                   AND id_1 = {{id1}}) as p
+        WHERE ST_Intersects(pt.the_geom, p.the_geom)
+            AND acq_date >= '{{begin}}'
+            AND acq_date <= '{{end}}'
+            AND confidence='nominal' `;
 
-const USE = 'SELECT COUNT(pt.*) AS value \
-        FROM vnp14imgtdl_nrt_global_7d pt, \
-            (SELECT * FROM {{useTable}} WHERE cartodb_id = {{pid}}) as p \
-        WHERE ST_Intersects(pt.the_geom, p.the_geom) \
-            AND acq_date >= \'{{begin}}\' \
-            AND acq_date <= \'{{end}}\' \
-            AND confidence=\'nominal\' ';
+const USE = `SELECT COUNT(pt.*) AS value
+        FROM vnp14imgtdl_nrt_global_7d pt,
+            (SELECT * FROM {{useTable}} WHERE cartodb_id = {{pid}}) as p
+        WHERE ST_Intersects(pt.the_geom, p.the_geom)
+            AND acq_date >= '{{begin}}'
+            AND acq_date <= '{{end}}'
+            AND confidence='nominal' `;
 
-const WDPA = 'SELECT COUNT(pt.*) AS value \
-        FROM vnp14imgtdl_nrt_global_7d pt, \
-            (SELECT CASE when marine::numeric = 2 then null \
-        WHEN ST_NPoints(the_geom)<=18000 THEN the_geom \
-        WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001) \
-        ELSE ST_RemoveRepeatedPoints(the_geom, 0.005) \
-        END as the_geom FROM wdpa_protected_areas where wdpaid={{wdpaid}}) as p \
-        WHERE ST_Intersects(pt.the_geom, p.the_geom) \
-            AND acq_date >= \'{{begin}}\' \
-            AND acq_date <= \'{{end}}\' \
-            AND confidence=\'nominal\' ';
+const WDPA = `SELECT COUNT(pt.*) AS value 
+        FROM vnp14imgtdl_nrt_global_7d pt, 
+            (SELECT CASE when marine::numeric = 2 then null
+        WHEN ST_NPoints(the_geom)<=18000 THEN the_geom
+        WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001)
+        ELSE ST_RemoveRepeatedPoints(the_geom, 0.005)
+        END as the_geom FROM wdpa_protected_areas where wdpaid={{wdpaid}}) as p
+        WHERE ST_Intersects(pt.the_geom, p.the_geom)
+            AND acq_date >= '{{begin}}'
+            AND acq_date <= '{{end}}'
+            AND confidence='nominal' `;
 
 
 var executeThunk = function(client, sql, params) {
@@ -122,8 +122,11 @@ class CartoDBService {
         try{
             let formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
             let download = {};
+            let queryFinal = Mustache.render(query, params);
+            queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+            queryFinal = encodeURIComponent(queryFinal);
             for(let i=0, length = formats.length; i < length; i++){
-                download[formats[i]] = this.apiUrl + '?q=' + encodeURIComponent(Mustache.render(query, params)) + '&format=' + formats[i];
+                download[formats[i]] = this.apiUrl + '?q=' + queryFinal + '&format=' + formats[i];
             }
             return download;
         }catch(err){
