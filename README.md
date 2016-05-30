@@ -1,6 +1,5 @@
 # GFW Fires API
 
-
 This repository is the microservice that it implement the viirs fires funcionality and exposed the /viirs-active-fires endpoint in the api-gateway
 
 [View the documentation for this

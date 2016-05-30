@@ -1,6 +1,5 @@
 {
     "cartoDB":{
-        "apiKey": "CARTODB_APIKEY",
         "user": "CARTODB_USER"
     }
 }

@@ -11,7 +11,7 @@
         "port": 3600
     },
     "cartoDB":{
-        "apiKey": null,
-        "user": null
+        "user": null,
+        "apiUrl": "https://wri-01.cartodb.com/api/v2/sql"
     }
 }

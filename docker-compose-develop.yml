@@ -5,7 +5,6 @@ develop:
   container_name: gfw-fires-api-develop
   environment:
     NODE_ENV: dev
-    CARTODB_APIKEY: <apikey>
     CARTODB_USER: <user>
   command: develop
   volumes:
