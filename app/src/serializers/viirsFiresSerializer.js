@@ -12,10 +12,21 @@ var viirsFiresSerializer = new JSONAPISerializer('viirs-fires', {
     }
 });
 
+var viirsFiresLatestSerializer = new JSONAPISerializer('imazon-latest', {
+    attributes: ['date'],
+    typeForAttribute: function (attribute, record) {
+        return attribute;
+    }
+});
+
 class ViirsFiresSerializer {
 
   static serialize(data) {
     return viirsFiresSerializer.serialize(data);
+  }
+
+  static serializeLatest(data) {
+    return viirsFiresLatestSerializer.serialize(data);
   }
 }
 

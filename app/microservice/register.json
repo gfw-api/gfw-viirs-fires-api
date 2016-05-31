@@ -36,5 +36,12 @@
             "method": "GET",
             "path": "/api/v1/viirs-active-fires"
         }]
+    }, {
+        "url": "/viirs-active-fires/latest",
+        "method": "GET",
+        "endpoints": [{
+            "method": "GET",
+            "path": "/api/v1/viirs-active-fires/latest"
+        }]
     }]
 }

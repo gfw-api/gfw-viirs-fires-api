@@ -205,6 +205,35 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 
+  /viirs-active-fires/latest:
+    get:
+      operationId: getLatest
+      produces:
+        - application/vnd.api+json
+      tags:
+        - VIIRS
+      parameters:
+        - name: limit
+          in: query
+          description: Limit. Default 3
+          type: integer
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/VIIRSLATESTAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
 
 definitions:
   Errors:
@@ -255,6 +284,34 @@ definitions:
       meta:
         type: object
         description: A meta object containing non-standard meta-information about the error.
+
+  VIIRSLATESTAPI:
+    type: object
+    properties:
+      data:
+        properties:
+          $schema:
+            $ref: '#/definitions/VIIRSLATESTBody'
+  VIIRSLATESTBody:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Resource type
+      id:
+        type: string
+        description: Resource id
+      attributes:
+        properties:
+          schema:
+            $ref: '#/definitions/VIIRSLATESTModel'
+
+  VIIRSLATESTModel:
+    type: object
+    properties:
+      date:
+        type: string
+        format: date
 
   VIIRSFIRESAPI:
     type: object
