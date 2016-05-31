@@ -56,6 +56,12 @@ const WDPA = `SELECT COUNT(pt.*) AS value 
             AND acq_date <= '{{end}}'
             AND confidence='nominal' `;
 
+const LATEST = `SELECT DISTINCT acq_date as date
+        FROM vnp14imgtdl_nrt_global_7d
+        WHERE acq_date IS NOT NULL
+        ORDER BY date DESC
+        LIMIT {{limit}}`;
+
 
 var executeThunk = function(client, sql, params) {
     return function(callback) {
@@ -70,8 +76,7 @@ var executeThunk = function(client, sql, params) {
 
 var deserializer = function(obj) {
     return function(callback) {
-        new JSONAPIDeserializer({
-        }).deserialize(obj, callback);
+        new JSONAPIDeserializer({}).deserialize(obj, callback);
     };
 };
 
@@ -119,17 +124,17 @@ class CartoDBService {
     }
 
     getDownloadUrls(query, params) {
-        try{
+        try {
             let formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
             let download = {};
             let queryFinal = Mustache.render(query, params);
             queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
             queryFinal = encodeURIComponent(queryFinal);
-            for(let i=0, length = formats.length; i < length; i++){
+            for (let i = 0, length = formats.length; i < length; i++) {
                 download[formats[i]] = this.apiUrl + '?q=' + queryFinal + '&format=' + formats[i];
             }
             return download;
-        }catch(err){
+        } catch (err) {
             logger.error(err);
         }
     }
@@ -246,6 +251,24 @@ class CartoDBService {
             return null;
         }
         throw new NotFound('Geostore not found');
+    }
+
+    * latest(limit=3) {
+        logger.debug('Obtaining latest with limit %s', limit);
+        let params = {
+            limit: limit
+        };
+        try{
+            let data = yield executeThunk(this.client, LATEST, params);
+            logger.debug('data', data);
+            if (data.rows ) {
+                let result = data.rows;
+                return result;
+            }
+            return null;
+        }catch(err){
+            throw err;
+        }
     }
 
 }

@@ -61,18 +61,23 @@ class ViirsFiresRouter {
     static * world() {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
-        try{
+        try {
             let data = yield CartoDBService.getWorld(this.query.geostore, this.query.period);
 
             this.body = ViirsFiresSerializer.serialize(data);
-        } catch(err){
-            if(err instanceof NotFound){
+        } catch (err) {
+            if (err instanceof NotFound) {
                 this.throw(404, 'Geostore not found');
                 return;
             }
             throw err;
         }
+    }
 
+    static * latest() {
+        logger.info('Obtaining latest data');
+        let data = yield CartoDBService.latest(this.query.limit);
+        this.body = ViirsFiresSerializer.serializeLatest(data);
     }
 
 }
@@ -91,6 +96,7 @@ router.get('/admin/:iso/:id1', isCached, ViirsFiresRouter.getSubnational);
 router.get('/use/:name/:id', isCached, ViirsFiresRouter.use);
 router.get('/wdpa/:id', isCached, ViirsFiresRouter.wdpa);
 router.get('/', isCached, ViirsFiresRouter.world);
+router.get('/latest', isCached, ViirsFiresRouter.latest);
 
 
 module.exports = router;
