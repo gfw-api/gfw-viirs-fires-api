@@ -253,22 +253,18 @@ class CartoDBService {
         throw new NotFound('Geostore not found');
     }
 
-    * latest(limit=3) {
+    * latest(limit = 3) {
         logger.debug('Obtaining latest with limit %s', limit);
         let params = {
             limit: limit
         };
-        try{
-            let data = yield executeThunk(this.client, LATEST, params);
-            logger.debug('data', data);
-            if (data.rows ) {
-                let result = data.rows;
-                return result;
-            }
-            return null;
-        }catch(err){
-            throw err;
+        let data = yield executeThunk(this.client, LATEST, params);
+        logger.debug('data', data);
+        if (data.rows) {
+            let result = data.rows;
+            return result;
         }
+        return null;
     }
 
 }
