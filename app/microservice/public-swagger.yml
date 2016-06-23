@@ -211,7 +211,7 @@ paths:
       produces:
         - application/vnd.api+json
       tags:
-        - VIIRS
+        - VIIRS-FIRES
       parameters:
         - name: limit
           in: query
