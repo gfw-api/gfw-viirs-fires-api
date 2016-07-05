@@ -15,7 +15,7 @@ class ViirsFiresRouter {
     static * getNational() {
         logger.info('Obtaining national data');
         let data = yield CartoDBService.getNational(this.params.iso, this.query.period);
-        logger.debug(data);
+        logger.debug('obtained ', data);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 

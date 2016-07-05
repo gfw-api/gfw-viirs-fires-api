@@ -15,46 +15,49 @@ const WORLD = `SELECT COUNT(pt.*) AS value
                 ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), the_geom)
             AND confidence='nominal' `;
 
-const ISO = `SELECT COUNT(pt.*) AS value
-        FROM vnp14imgtdl_nrt_global_7d pt,
-            (SELECT  *
-            FROM gadm2_countries_simple
-            WHERE iso = UPPER('{{iso}}')) as p
-        WHERE ST_Intersects(pt.the_geom, p.the_geom)
-            AND acq_date >= '{{begin}}'
-            AND acq_date <= '{{end}}'
-            AND confidence='nominal' `;
+const ISO = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) as area_ha
+           FROM gadm2_countries_simple
+           WHERE iso = UPPER('{{iso}}'))
+            SELECT count(pt.*) as value,  p.area_ha
+            FROM p
+            left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
+            and
+             confidence='nominal' AND acq_date >= '{{begin}}'::date
+             AND acq_date <= '{{end}}'::date
+            group by p.area_ha`;
 
-const ID1 = `SELECT COUNT(pt.*) AS value
-        FROM vnp14imgtdl_nrt_global_7d pt,
-             (SELECT *
-             FROM gadm2_provinces_simple
-             WHERE iso = UPPER('{{iso}}')
-                   AND id_1 = {{id1}}) as p
-        WHERE ST_Intersects(pt.the_geom, p.the_geom)
-            AND acq_date >= '{{begin}}'
-            AND acq_date <= '{{end}}'
-            AND confidence='nominal' `;
 
-const USE = `SELECT COUNT(pt.*) AS value
-        FROM vnp14imgtdl_nrt_global_7d pt,
-            (SELECT * FROM {{useTable}} WHERE cartodb_id = {{pid}}) as p
-        WHERE ST_Intersects(pt.the_geom, p.the_geom)
-            AND acq_date >= '{{begin}}'
-            AND acq_date <= '{{end}}'
-            AND confidence='nominal' `;
+const ID1 = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) as area_ha
+           FROM gadm2_provinces_simple
+           WHERE iso = UPPER('{{iso}}')  AND id_1 = {{id1}})
+            SELECT count(pt.*) as value,  p.area_ha
+            FROM p
+            left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
+            and
+             confidence='nominal' AND acq_date >= '{{begin}}'::date
+             AND acq_date <= '{{end}}'::date
+            group by p.area_ha`;
 
-const WDPA = `SELECT COUNT(pt.*) AS value 
-        FROM vnp14imgtdl_nrt_global_7d pt, 
-            (SELECT CASE when marine::numeric = 2 then null
+
+const USE = `with p as (SELECT the_geom,     area_ha::numeric FROM {{useTable}} WHERE cartodb_id = {{pid}})
+        SELECT count(pt.*)  as value,  p.area_ha
+        FROM p
+        left join vnp14imgtdl_nrt_global_7d pt on ( ST_Intersects(p.the_geom, pt.the_geom) AND acq_date >= '{{begin}}'
+        AND acq_date <= '{{end}}' AND confidence='nominal') group by p.area_ha`;
+
+const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
         WHEN ST_NPoints(the_geom)<=18000 THEN the_geom
         WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001)
         ELSE ST_RemoveRepeatedPoints(the_geom, 0.005)
-        END as the_geom FROM wdpa_protected_areas where wdpaid={{wdpaid}}) as p
-        WHERE ST_Intersects(pt.the_geom, p.the_geom)
-            AND acq_date >= '{{begin}}'
-            AND acq_date <= '{{end}}'
-            AND confidence='nominal' `;
+        END as the_geom, rep_area*100 as area_ha FROM wdpa_protected_areas where wdpaid={{wdpaid}})
+        SELECT COUNT(pt.*) AS value , area_ha
+        FROM p
+        left join vnp14imgtdl_nrt_global_7d pt
+                    on ST_Intersects(pt.the_geom, p.the_geom)
+                    AND acq_date >= '{{begin}}'
+                    AND acq_date <= '{{end}}'
+                    AND confidence='nominal'
+        group by area_ha`;
 
 const LATEST = `SELECT DISTINCT acq_date as date
         FROM vnp14imgtdl_nrt_global_7d
