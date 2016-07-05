@@ -79,7 +79,7 @@ var executeThunk = function(client, sql, params) {
 
 var deserializer = function(obj) {
     return function(callback) {
-        new JSONAPIDeserializer({}).deserialize(obj, callback);
+        new JSONAPIDeserializer({keyForAttribute: 'camelCase'}).deserialize(obj, callback);
     };
 };
 
@@ -247,6 +247,7 @@ class CartoDBService {
             let data = yield executeThunk(this.client, WORLD, params);
             if (data.rows && data.rows.length > 0) {
                 let result = data.rows[0];
+                result.area_ha = geostore.areaHa;
                 result.period = this.getPeriodText(period);
                 result.downloadUrls = this.getDownloadUrls(WORLD, params);
                 return result;
