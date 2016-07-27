@@ -18,7 +18,7 @@ const WORLD = `SELECT COUNT(pt.*) AS value
 const ISO = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) as area_ha
            FROM gadm2_countries_simple
            WHERE iso = UPPER('{{iso}}'))
-            SELECT count(pt.*) as value,  p.area_ha
+            SELECT COUNT(pt.*) AS value,  p.area_ha
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
             and
@@ -30,7 +30,7 @@ const ISO = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) a
 const ID1 = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) as area_ha
            FROM gadm2_provinces_simple
            WHERE iso = UPPER('{{iso}}')  AND id_1 = {{id1}})
-            SELECT count(pt.*) as value,  p.area_ha
+            SELECT COUNT(pt.*) AS value,  p.area_ha
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
             and
@@ -40,7 +40,7 @@ const ID1 = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) a
 
 
 const USE = `with p as (SELECT the_geom,     area_ha::numeric FROM {{useTable}} WHERE cartodb_id = {{pid}})
-        SELECT count(pt.*)  as value,  p.area_ha
+        SELECT COUNT(pt.*) AS value,  p.area_ha
         FROM p
         left join vnp14imgtdl_nrt_global_7d pt on ( ST_Intersects(p.the_geom, pt.the_geom) AND acq_date >= '{{begin}}'
         AND acq_date <= '{{end}}' AND confidence='nominal') group by p.area_ha`;
@@ -132,6 +132,7 @@ class CartoDBService {
             let download = {};
             let queryFinal = Mustache.render(query, params);
             queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+            queryFinal = queryFinal.replace('group by p.area_ha', '');
             queryFinal = encodeURIComponent(queryFinal);
             for (let i = 0, length = formats.length; i < length; i++) {
                 download[formats[i]] = this.apiUrl + '?q=' + queryFinal + '&format=' + formats[i];
@@ -142,7 +143,13 @@ class CartoDBService {
         }
     }
 
-    * getNational(iso, period = defaultDate()) {
+    getURLForSubscrition(query) {
+        let queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+        queryFinal = queryFinal.replace('group by p.area_ha', '');
+        return queryFinal;
+    }
+
+    * getNational(iso, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining national of iso %s', iso);
         let periods = period.split(',');
         var params = {
@@ -150,17 +157,23 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        let data = yield executeThunk(this.client, ISO, params);
-        if (data.rows && data.rows.length > 0) {
+        let query = ISO;
+        if(forSubscription){
+            query = this.getURLForSubscrition(ISO);
+        }
+        let data = yield executeThunk(this.client, query, params);
+        if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(ISO, params);
             return result;
+        } else {
+            return data.rows;
         }
         return null;
     }
 
-    * getSubnational(iso, id1, period = defaultDate()) {
+    * getSubnational(iso, id1, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
         let periods = period.split(',');
         let params = {
@@ -169,17 +182,23 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        let data = yield executeThunk(this.client, ID1, params);
-        if (data.rows && data.rows.length > 0) {
+        let query = ID1;
+        if(forSubscription){
+            query = this.getURLForSubscrition(ID1);
+        }
+        let data = yield executeThunk(this.client, query, params);
+        if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(ID1, params);
             return result;
+        } else {
+            return data.rows;
         }
         return null;
     }
 
-    * getUse(useTable, id, period = defaultDate()) {
+    * getUse(useTable, id, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining use with id %s', id);
         let periods = period.split(',');
         let params = {
@@ -188,18 +207,24 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        let data = yield executeThunk(this.client, USE, params);
+        let query = USE;
+        if(forSubscription){
+            query = this.getURLForSubscrition(USE);
+        }
+        let data = yield executeThunk(this.client, query, params);
 
-        if (data.rows && data.rows.length > 0) {
+        if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(USE, params);
             return result;
+        } else {
+            return data.rows;
         }
         return null;
     }
 
-    * getWdpa(wdpaid, period = defaultDate()) {
+    * getWdpa(wdpaid, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
         let periods = period.split(',');
         let params = {
@@ -207,12 +232,18 @@ class CartoDBService {
             begin: periods[0],
             end: periods[1]
         };
-        let data = yield executeThunk(this.client, WDPA, params);
-        if (data.rows && data.rows.length > 0) {
+        let query = WDPA;
+        if(forSubscription){
+            query = this.getURLForSubscrition(WDPA);
+        }
+        let data = yield executeThunk(this.client, query, params);
+        if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(WDPA, params);
             return result;
+        } else {
+            return data.rows;
         }
         return null;
     }
@@ -232,7 +263,7 @@ class CartoDBService {
         return yield deserializer(result.body);
     }
 
-    * getWorld(hashGeoStore, period = defaultDate()) {
+    * getWorld(hashGeoStore, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
 
         let geostore = yield this.getGeostore(hashGeoStore);
@@ -244,13 +275,19 @@ class CartoDBService {
                 begin: periods[0],
                 end: periods[1]
             };
-            let data = yield executeThunk(this.client, WORLD, params);
-            if (data.rows && data.rows.length > 0) {
+            let query = WORLD;
+            if(forSubscription){
+                query = this.getURLForSubscrition(WORLD);
+            }
+            let data = yield executeThunk(this.client, query, params);
+            if (data.rows && data.rows.length === 1) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
                 result.period = this.getPeriodText(period);
                 result.downloadUrls = this.getDownloadUrls(WORLD, params);
                 return result;
+            } else {
+                return data.rows;
             }
             return null;
         }

@@ -14,14 +14,14 @@ var router = new Router({
 class ViirsFiresRouter {
     static * getNational() {
         logger.info('Obtaining national data');
-        let data = yield CartoDBService.getNational(this.params.iso, this.query.period);
+        let data = yield CartoDBService.getNational(this.params.iso, this.query.forSubscription, this.query.period);
         logger.debug('obtained ', data);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
     static * getSubnational() {
         logger.info('Obtaining subnational data');
-        let data = yield CartoDBService.getSubnational(this.params.iso, this.params.id1, this.query.period);
+        let data = yield CartoDBService.getSubnational(this.params.iso, this.query.forSubscription, this.params.id1, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
@@ -47,7 +47,7 @@ class ViirsFiresRouter {
         if (!useTable) {
             this.throw(404, 'Name not found');
         }
-        let data = yield CartoDBService.getUse(useTable, this.params.id, this.query.period);
+        let data = yield CartoDBService.getUse(useTable, this.query.forSubscription, this.params.id, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
 
     }
@@ -62,7 +62,7 @@ class ViirsFiresRouter {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
         try {
-            let data = yield CartoDBService.getWorld(this.query.geostore, this.query.period);
+            let data = yield CartoDBService.getWorld(this.query.geostore, this.query.forSubscription, this.query.period);
 
             this.body = ViirsFiresSerializer.serialize(data);
         } catch (err) {
