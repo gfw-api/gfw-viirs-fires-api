@@ -57,7 +57,7 @@ const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
                     AND acq_date >= '{{begin}}'
                     AND acq_date <= '{{end}}'
                     AND confidence='nominal'
-        group by area_ha`;
+        group by p.area_ha`;
 
 const LATEST = `SELECT DISTINCT acq_date as date
         FROM vnp14imgtdl_nrt_global_7d
