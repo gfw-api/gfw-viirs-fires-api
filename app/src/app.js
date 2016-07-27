@@ -1,5 +1,9 @@
 'use strict';
 //load modules
+
+if(process.env.NODE_ENV === 'prod'){
+    require('newrelic');
+}
 var config = require('config');
 var logger = require('logger');
 var path = require('path');

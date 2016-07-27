@@ -1,8 +1,8 @@
 base:
   build: .
   ports:
-    - "3600:3600"
+    - "3700:3700"
   environment:
-    PORT: 3600
+    PORT: 3700
     NODE_PATH: app/src
   container_name: gfw-viirs-fires-api
