@@ -21,7 +21,7 @@ class ViirsFiresRouter {
 
     static * getSubnational() {
         logger.info('Obtaining subnational data');
-        let data = yield CartoDBService.getSubnational(this.params.iso, this.query.forSubscription, this.params.id1, this.query.period);
+        let data = yield CartoDBService.getSubnational(this.params.iso, this.params.id1, this.query.forSubscription, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
@@ -47,14 +47,14 @@ class ViirsFiresRouter {
         if (!useTable) {
             this.throw(404, 'Name not found');
         }
-        let data = yield CartoDBService.getUse(useTable, this.query.forSubscription, this.params.id, this.query.period);
+        let data = yield CartoDBService.getUse(useTable, this.params.id, this.query.forSubscription, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
 
     }
 
     static * wdpa() {
         logger.info('Obtaining wpda data with id %s', this.params.id);
-        let data = yield CartoDBService.getWdpa(this.params.id, this.query.period);
+        let data = yield CartoDBService.getWdpa(this.params.id, this.query.forSubscription, this.query.period);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
