@@ -43,7 +43,8 @@ const USE = `with p as (SELECT the_geom,     area_ha::numeric FROM {{useTable}} 
         SELECT COUNT(pt.*) AS value,  p.area_ha
         FROM p
         left join vnp14imgtdl_nrt_global_7d pt on ( ST_Intersects(p.the_geom, pt.the_geom) AND acq_date >= '{{begin}}'
-        AND acq_date <= '{{end}}' AND confidence='nominal') group by p.area_ha`;
+        AND acq_date <= '{{end}}' AND confidence='nominal')
+        group by p.area_ha`;
 
 const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
         WHEN ST_NPoints(the_geom)<=18000 THEN the_geom
