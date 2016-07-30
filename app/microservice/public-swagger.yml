@@ -1,9 +1,9 @@
 swagger: '2.0'
 info:
-  title: GFW GeoStore API
-  description: Global Forest Watch - GeoStore API
+  title: GFW Viirs Fires Forest API
+  description: Global Forest Watch - Viirs Fires Forest API
   version: "1.0.0"
-host: api.gfw.com
+host: example.vizzuality.com
 
 schemes:
   - https
@@ -13,25 +13,29 @@ produces:
   - application/vnd.api+json
 
 paths:
-  /geostore/{id}:
+  /viirs-active-fires:
     get:
-      description: Returns geostore based on a single ID, if the geostore not exist return 404
-      operationId: getGeoStoreById
+      operationId: world
       produces:
         - application/vnd.api+json
       tags:
-        - GeoStore
+        - VIIRS-FIRES
       parameters:
-        - name: id
-          in: path
-          description: ID of geostore to fetch
+        - name: geostore
+          in: query
+          description: Hash of the geostore
+          required: true
+          type: string
+        - name: period
+          in: query
+          description: Period of time (default last day)
           required: true
           type: string
       responses:
         200:
-          description: Geostore obtained
+          description: Results obtained
           schema:
-            $ref: '#/definitions/GeoStoreAPI'
+            $ref: '#/definitions/VIIRSFIRESAPI'
         404:
           description: Geostore not found
           schema:
@@ -44,29 +48,37 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Errors'
-  /geostore:
-    post:
-      summary: Create geostore
-      description: Create Geostore
+
+  /viirs-active-fires/use/{name}/{id}:
+    get:
+      operationId: use
       produces:
         - application/vnd.api+json
       tags:
-        - GeoStore
-      operationId: createGeoStore
+        - VIIRS-FIRES
       parameters:
-        - name: geoStore
-          in: body
-          description: GeoStore to save
+        - name: name
+          in: path
+          description: Analisys name (['mining', 'oilpalm', 'fiber', 'logging'])
           required: true
-          schema:
-            $ref: '#/definitions/Features'
+          type: string
+        - name: id
+          in: path
+          description: cartodbid
+          required: true
+          type: integer
+        - name: period
+          in: query
+          description: Period of time (default last day)
+          required: true
+          type: string
       responses:
         200:
-          description: The object created
+          description: Results obtained
           schema:
-            $ref: '#/definitions/GeoStoreAPI'
-        400:
-          description: Validate error
+            $ref: '#/definitions/VIIRSFIRESAPI'
+        404:
+          description: Geostore not found
           schema:
             $ref: '#/definitions/Errors'
         500:
@@ -74,7 +86,152 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
         default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+
+  /viirs-active-fires/wdpa/{id}:
+    get:
+      operationId: wdpa
+      produces:
+        - application/vnd.api+json
+      tags:
+        - VIIRS-FIRES
+      parameters:
+        - name: id
+          in: path
+          description: wdpa id
+          required: true
+          type: integer
+        - name: period
+          in: query
+          description: Period of time (default last day)
+          required: true
+          type: string
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/VIIRSFIRESAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
           description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+
+  /viirs-active-fires/admin/{iso}:
+    get:
+      description: a
+      operationId: getNational
+      produces:
+        - application/vnd.api+json
+      tags:
+        - VIIRS-FIRES
+      parameters:
+        - name: iso
+          in: path
+          description: ISO code
+          required: true
+          type: string
+        - name: period
+          in: query
+          description: Period of time (default last day)
+          required: true
+          type: string
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/VIIRSFIRESAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+
+  /viirs-active-fires/admin/{iso}/{id1}:
+    get:
+      description: a
+      operationId: getSubnational
+      produces:
+        - application/vnd.api+json
+      tags:
+        - VIIRS-FIRES
+      parameters:
+        - name: iso
+          in: path
+          description: ISO code
+          required: true
+          type: string
+        - name: id1
+          in: path
+          description: Region code
+          required: true
+          type: integer
+        - name: period
+          in: query
+          description: Period of time (default last day)
+          required: true
+          type: string
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/VIIRSFIRESAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+
+  /viirs-active-fires/latest:
+    get:
+      operationId: getLatest
+      produces:
+        - application/vnd.api+json
+      tags:
+        - VIIRS-FIRES
+      parameters:
+        - name: limit
+          in: query
+          description: Limit. Default 3
+          type: integer
+      responses:
+        200:
+          description: Results obtained
+          schema:
+            $ref: '#/definitions/VIIRSLATESTAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
           schema:
             $ref: '#/definitions/Errors'
 
@@ -128,16 +285,14 @@ definitions:
         type: object
         description: A meta object containing non-standard meta-information about the error.
 
-
-  GeoStoreAPI:
+  VIIRSLATESTAPI:
     type: object
     properties:
       data:
-        type: array
-        items:
-          $ref: '#/definitions/GeoJSON'
-
-  GeoJSON:
+        properties:
+          schema:
+            $ref: '#/definitions/VIIRSLATESTBody'
+  VIIRSLATESTBody:
     type: object
     properties:
       type:
@@ -149,57 +304,55 @@ definitions:
       attributes:
         properties:
           schema:
-            $ref: '#/definitions/GEOJSONBody'
-  GEOJSONBody:
+            $ref: '#/definitions/VIIRSLATESTModel'
+
+  VIIRSLATESTModel:
     type: object
     properties:
-      areaHa:
-        type: number
-        format: float
-        description: Area in Ha
-      hash:
+      date:
         type: string
-        description: Id of geostore
-      geojson:
-        type: array
-        description: Features
-        items:
-          $ref: '#/definitions/Feature'
-  Features:
+        format: date
+
+  VIIRSFIRESAPI:
     type: object
     properties:
-      type:
-        type: string
-        description: Type of feature
-      features:
-        type: array
-        description: Features
-        items:
-          $ref: '#/definitions/Feature'
-  Feature:
-    type: object
-    properties:
-      type:
-        type: string
-        description: Type of feature
-      properties:
-        type: object
-        description: Feature
-      geometry:
-        type: object
-        description: Geometries
+      data:
         properties:
           schema:
-            $ref: '#/definitions/Geometry'
+            $ref: '#/definitions/VIIRSFIRESBody'
 
-  Geometry:
+  VIIRSFIRESBody:
     type: object
     properties:
       type:
         type: string
-        description: Geometry type
-      coordinates:
-        type: array
-        description: Coordinates array
-        items:
-          type: object
+        description: Resource type
+      id:
+        type: string
+        description: Resource id
+      attributes:
+        properties:
+          schema:
+            $ref: '#/definitions/VIIRSFIRESModel'
+
+  VIIRSFIRESModel:
+    type: object
+    properties:
+      value:
+        type: number
+        format: float
+      period:
+        type: string
+      download-urls:
+        type: object
+        properties:
+          csv:
+            type: string
+          geojson:
+            type: string
+          kml:
+            type: string
+          shp:
+            type: string
+          svg:
+            type: string
