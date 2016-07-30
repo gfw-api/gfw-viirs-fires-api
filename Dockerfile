@@ -25,7 +25,7 @@ COPY ./app /opt/$NAME/app
 RUN chown $USER /opt/$NAME
 
 # Tell Docker we are going to use this ports
-EXPOSE 3700
+EXPOSE 3600
 USER $USER
 
 ENTRYPOINT ["./entrypoint.sh"]
