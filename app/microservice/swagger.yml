@@ -1,7 +1,19 @@
 swagger: '2.0'
 info:
-  title: GFW Viirs Fires Forest API
-  description: Global Forest Watch - Viirs Fires Forest API
+  title: GFW Viirs Fires Alerts API
+  description: |
+    ## Global Forest Watch - Viirs Fires Alerts API
+
+    Displays fire alert data for the past 7 days.
+
+    | Property | Value |
+    | --- | --- | --- |
+    | Coverage | Global |
+    | Resolution | 1 x 1 kilometer |
+    | Source | MODIS |
+    | Timescale | Last 7 days |
+    | Units | Alerts |
+    | Updates | Daily |
   version: "1.0.0"
 host: example.vizzuality.com
 
