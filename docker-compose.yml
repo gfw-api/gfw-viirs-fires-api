@@ -5,6 +5,7 @@ prod:
   env_file:
     - prod.env
   command: start
+  dns: ${DNS_SERVER}
   log_driver: "gelf"
   restart: always
   log_opt:
