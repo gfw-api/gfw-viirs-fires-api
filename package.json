@@ -1,6 +1,6 @@
 {
   "name": "gfw-viirs-fires-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Global forest watch - UMD Viirs Fires API",
   "main": "index.js",
   "scripts": {

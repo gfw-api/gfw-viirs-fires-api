@@ -1,7 +1,7 @@
 {
     "logger": {
         "name": "gfw-viirs-fires-api",
-        "level": "info",
+        "level": "warn",
         "toFile": false,
         "dirLogFile": null
     }
