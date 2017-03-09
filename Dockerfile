@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6.2
+FROM mhart/alpine-node:7.6
 MAINTAINER raul.requero@vizzuality.com
 
 ENV NAME gfw-viirs-fires-api
