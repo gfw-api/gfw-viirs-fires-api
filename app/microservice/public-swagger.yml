@@ -65,6 +65,8 @@ consumes:
 
 produces:
   - application/vnd.api+json
+  
+basePath: /v1
 ###############################################################################
 #                                  Security                                    
 ###############################################################################
@@ -135,7 +137,83 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Errors'
+    post:
+      description: |
+        Retrives total number of alerts for your custom geometry on the period selected
+      operationId: worldWithGeojson
+      consumes:
+        - application/vnd.api+json
+      produces:
+        - application/vnd.api+json
+        - application/json
+      tags:
+        - VIIRS-FIRES
+      parameters:
+        - name: geojson
+          in: body
+          description: |
+            ##### examples
+              ```json
+              {
+                  "geojson": {
+                      "type": "FeatureCollection",
+                      "features": [{
+                          "type": "Feature",
+                          "properties": {},
+                          "geometry": {
+                              "type": "Polygon",
+                              "coordinates": [
+                                  [
+                                      [-5.273512601852417, 42.81137220349083],
+                                      [-5.273512601852417, 42.811803118457306],
+                                      [-5.272732079029083, 42.811803118457306],
+                                      [-5.272732079029083, 42.81137220349083],
+                                      [-5.273512601852417, 42.81137220349083]
+                                  ]
+                              ]
+                          }
+                      }]
+                  }
+              }
+              ```
+          required: true
+          schema:
+            $ref: '#/definitions/GeoJsonBodyRequest'
+        - name: period
+          in: query
+          description: |
+            Period of time 
+            ```2015-01-01,2016-12-01```
+          required: true
+          type: string
 
+      responses:
+        200:
+          description: Results obteined
+          examples:
+              data: 
+                type: viirs-alerts
+                id: f123fswse13
+                attributes:
+                  value: 988
+                  areaHa: 10472.639768453402
+                  downloadUrls:
+                    csv: /download/274b4818-be18-4890-9d10-eae56d2a82e5?sql=select lat, lon, confidence, year, julian_day from index_b846230fcec0420892d13fc11ea7e32b where year = 2016 and julian_day >= 1 and julian_day <= 347&geostore=34cecd4c4809dbbec20ce40be3d1c877&format=csv
+                    json: /download/274b4818-be18-4890-9d10-eae56d2a82e5?sql=select lat, lon, confidence, year, julian_day from index_b846230fcec0420892d13fc11ea7e32b where year = 2016 and julian_day >= 1 and julian_day <= 347&geostore=34cecd4c4809dbbec20ce40be3d1c877&format=json
+          schema:
+            $ref: '#/definitions/VIIRSFIRESAPI'
+        404:
+          description: Geostore not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Errors'
   /viirs-active-fires/use/{name}/{id}:
     get:
       operationId: use
@@ -508,4 +586,47 @@ definitions:
           svg:
             type: string
 
-
+  GeoJsonBodyRequest:
+    type: object
+    properties:
+      geojson:
+        properties:
+          schema:
+            $ref: '#/definitions/Features'
+  Features:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Type of feature
+      features:
+        type: array
+        description: Features
+        items:
+          $ref: '#/definitions/Feature'
+  Feature:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Type of feature
+      properties:
+        type: object
+        description: Feature
+      geometry:
+        type: object
+        description: Geometries
+        properties:
+          schema:
+            $ref: '#/definitions/Geometry'
+  Geometry:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Geometry type
+      coordinates:
+        type: array
+        description: Coordinates array
+        items:
+          type: object
