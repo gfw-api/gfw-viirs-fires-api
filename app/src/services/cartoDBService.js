@@ -7,13 +7,17 @@ var Mustache = require('mustache');
 var NotFound = require('errors/notFound');
 var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
-const WORLD = `SELECT COUNT(pt.*) AS value
-        FROM vnp14imgtdl_nrt_global_7d pt
-        WHERE acq_date >= '{{begin}}'
+const WORLD = `
+        with p as (select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/1000 as area_ha ),
+         c as (select COUNT(pt.*) AS value FROM vnp14imgtdl_nrt_global_7d pt 
+        where acq_date >= '{{begin}}'
             AND acq_date <= '{{end}}'
             AND ST_INTERSECTS(
                 ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), the_geom)
-            AND confidence='nominal' `;
+            AND confidence='nominal' )
+        SELECT  c.value, p.area_ha
+        FROM c, p
+        `;
 
 const ISO = `with p as (SELECT  the_geom, (ST_Area(geography(the_geom))/10000) as area_ha
            FROM gadm2_countries_simple
@@ -269,30 +273,37 @@ class CartoDBService {
 
         let geostore = yield this.getGeostore(hashGeoStore);
         if (geostore && geostore.geojson) {
-            logger.debug('Executing query in cartodb with geostore', geostore);
-            let periods = period.split(',');
-            let params = {
-                geojson: JSON.stringify(geostore.geojson.features[0].geometry),
-                begin: periods[0],
-                end: periods[1]
-            };
-            let query = WORLD;
-            if(forSubscription){
-                query = this.getURLForSubscrition(WORLD);
-            }
-            let data = yield executeThunk(this.client, query, params);
-            if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
-                result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(WORLD, params);
-                return result;
-            } else {
-                return data.rows;
-            }
-            return null;
+            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period);
         }
         throw new NotFound('Geostore not found');
+    }
+
+    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate()) {
+        logger.debug('Executing query in cartodb with geojson', geojson);
+        let periods = period.split(',');
+        let params = {
+            geojson: JSON.stringify(geojson.features[0].geometry),
+            begin: periods[0],
+            end: periods[1]
+        };
+        let query = WORLD;
+        if(forSubscription){
+            query = this.getURLForSubscrition(WORLD);
+        }
+        let data = yield executeThunk(this.client, query, params);
+        logger.debug('data', data);
+        if (data.rows && data.rows.length === 1) {
+            let result = data.rows[0];
+            if(data.rows.length > 0){
+                result.area_ha = data.rows[0].area_ha;
+            }
+            result.period = this.getPeriodText(period);
+            result.downloadUrls = this.getDownloadUrls(WORLD, params);
+            return result;
+        } else {
+            return data.rows;
+        }
+        return null;
     }
 
     * latest(limit = 3) {
