@@ -9,7 +9,7 @@ var JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
 const WORLD = `
         with p as (select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/1000 as area_ha ),
-         c as (select COUNT(pt.*) AS value FROM vnp14imgtdl_nrt_global_7d pt 
+         c as (select COUNT(pt.*) AS value FROM vnp14imgtdl_nrt_global_7d pt
         where acq_date >= '{{begin}}'
             AND acq_date <= '{{end}}'
             AND ST_INTERSECTS(
@@ -273,12 +273,12 @@ class CartoDBService {
 
         let geostore = yield this.getGeostore(hashGeoStore);
         if (geostore && geostore.geojson) {
-            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period);
+            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period, geostore.areaHa);
         }
         throw new NotFound('Geostore not found');
     }
 
-    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate()) {
+    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), areaHa=null) {
         logger.debug('Executing query in cartodb with geojson', geojson);
         let periods = period.split(',');
         let params = {
@@ -295,7 +295,11 @@ class CartoDBService {
         if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             if(data.rows.length > 0){
-                result.area_ha = data.rows[0].area_ha;
+                if (areaHa) {
+                    result.area_ha = areaHa;
+                } else {
+                    result.area_ha = data.rows[0].area_ha;
+                }
             }
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(WORLD, params);
