@@ -300,7 +300,7 @@ class CartoDBService {
         if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             if(data.rows.length > 0){
-                result.area_ha = data.rows[0].area_ha;
+                result.area_ha = data.rows[0].areaHa;
             }
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(WORLD, params);
