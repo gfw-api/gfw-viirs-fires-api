@@ -278,12 +278,12 @@ class CartoDBService {
 
         const geostore = yield GeostoreService.getGeostoreByHash(hashGeoStore);
         if (geostore && geostore.geojson) {
-            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period);
+            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period, geostore.areaHa);
         }
         throw new NotFound('Geostore not found');
     }
 
-    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate()) {
+    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), areaHa=null) {
         logger.debug('Executing query in cartodb with geojson', geojson);
         let periods = period.split(',');
         let params = {
@@ -300,7 +300,15 @@ class CartoDBService {
         if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             if(data.rows.length > 0){
+<<<<<<< HEAD
                 result.area_ha = data.rows[0].areaHa;
+=======
+                if (areaHa) {
+                    result.area_ha = areaHa;
+                } else {
+                    result.area_ha = data.rows[0].area_ha;
+                }
+>>>>>>> e7bc5166ce219763c3d417ceec1448f681341426
             }
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(WORLD, params);
