@@ -300,21 +300,15 @@ class CartoDBService {
         if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
             if(data.rows.length > 0){
-<<<<<<< HEAD
-                result.area_ha = data.rows[0].areaHa;
-=======
-                if (areaHa) {
-                    result.area_ha = areaHa;
-                } else {
-                    result.area_ha = data.rows[0].area_ha;
-                }
->>>>>>> e7bc5166ce219763c3d417ceec1448f681341426
+                result.area_ha = areaHa;
             }
             result.period = this.getPeriodText(period);
             result.downloadUrls = this.getDownloadUrls(WORLD, params);
             return result;
         } else {
-            return data.rows;
+            return {
+                area_ha: areaHa
+            };
         }
         return null;
     }
