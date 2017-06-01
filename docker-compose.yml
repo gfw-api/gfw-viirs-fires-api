@@ -1,5 +1,5 @@
 prod:
-  image: vizzuality/gfw-fires-api:1.1.0${STAGING}
+  image: vizzuality/gfw-fires-api:1.2.0${STAGING}
   ports:
     - "3600"
   env_file:
