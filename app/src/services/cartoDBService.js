@@ -9,7 +9,7 @@ const GeostoreService = require('services/geostoreService');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
 const WORLD = `
-        select COUNT(pt.*) AS value FROM vnp14imgtdl_nrt_global_7d pt 
+        SELECT COUNT(pt.*) AS value FROM vnp14imgtdl_nrt_global_7d pt 
         where acq_date >= '{{begin}}'
             AND acq_date <= '{{end}}'
             AND ST_INTERSECTS(
@@ -67,36 +67,38 @@ const LATEST = `SELECT DISTINCT acq_date as date
         LIMIT {{limit}}`;
 
 
-var executeThunk = function(client, sql, params) {
-    return function(callback) {
+var executeThunk = function (client, sql, params) {
+    return function (callback) {
         logger.debug(Mustache.render(sql, params));
-        client.execute(sql, params).done(function(data) {
+        client.execute(sql, params).done(function (data) {
             callback(null, data);
-        }).error(function(err) {
+        }).error(function (err) {
             callback(err, null);
         });
     };
 };
 
-var deserializer = function(obj) {
-    return function(callback) {
-        new JSONAPIDeserializer({keyForAttribute: 'camelCase'}).deserialize(obj, callback);
+var deserializer = function (obj) {
+    return function (callback) {
+        new JSONAPIDeserializer({
+            keyForAttribute: 'camelCase'
+        }).deserialize(obj, callback);
     };
 };
 
 
-let getToday = function() {
+let getToday = function () {
     let today = new Date();
     return `${today.getFullYear().toString()}-${(today.getMonth()+1).toString()}-${today.getDate().toString()}`;
 };
 
-let getYesterday = function() {
+let getYesterday = function () {
     let yesterday = new Date(Date.now() - (24 * 60 * 60 * 1000));
     return `${yesterday.getFullYear().toString()}-${(yesterday.getMonth()+1).toString()}-${yesterday.getDate().toString()}`;
 };
 
 
-let defaultDate = function() {
+let defaultDate = function () {
     let to = getToday();
     let from = getYesterday();
     return from + ',' + to;
@@ -157,12 +159,15 @@ class CartoDBService {
             end: periods[1]
         };
         let query = ISO;
-        if(forSubscription){
+        if (forSubscription) {
             query = this.getURLForSubscrition(ISO);
         }
         let geostore = yield GeostoreService.getGeostoreByIso(iso);
         let data = yield executeThunk(this.client, query, params);
         if (geostore) {
+            if (forSubscription && data.rows) {
+                return data.rows;
+            }
             if (data.rows && data.rows.length === 1) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
@@ -171,7 +176,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -188,12 +193,15 @@ class CartoDBService {
             end: periods[1]
         };
         let query = ID1;
-        if(forSubscription){
+        if (forSubscription) {
             query = this.getURLForSubscrition(ID1);
         }
         let geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1);
         let data = yield executeThunk(this.client, query, params);
         if (geostore) {
+            if (forSubscription && data.rows) {
+                return data.rows;
+            }
             if (data.rows && data.rows.length === 1) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
@@ -202,7 +210,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -219,12 +227,15 @@ class CartoDBService {
             end: periods[1]
         };
         let query = USE;
-        if(forSubscription){
+        if (forSubscription) {
             query = this.getURLForSubscrition(USE);
         }
         const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
         let data = yield executeThunk(this.client, query, params);
         if (geostore) {
+            if (forSubscription && data.rows) {
+                return data.rows;
+            }
             if (data.rows && data.rows.length === 1) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
@@ -233,7 +244,7 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
@@ -249,13 +260,16 @@ class CartoDBService {
             end: periods[1]
         };
         let query = WDPA;
-        if(forSubscription){
+        if (forSubscription) {
             query = this.getURLForSubscrition(WDPA);
         }
         const geostore = yield GeostoreService.getGeostoreByWdpa(wdpaid);
-        
+
         let data = yield executeThunk(this.client, query, params);
         if (geostore) {
+            if (forSubscription && data.rows) {
+                return data.rows;
+            }
             if (data.rows && data.rows.length === 1) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
@@ -264,14 +278,14 @@ class CartoDBService {
                 return result;
             } else {
                 return {
-                    area_ha: geostore.areaHa   
+                    area_ha: geostore.areaHa
                 };
             }
         }
         return null;
     }
 
-    
+
 
     * getWorld(hashGeoStore, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
@@ -283,7 +297,7 @@ class CartoDBService {
         throw new NotFound('Geostore not found');
     }
 
-    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), areaHa=null) {
+    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), areaHa = null) {
         logger.debug('Executing query in cartodb with geojson', geojson);
         let periods = period.split(',');
         let params = {
@@ -292,14 +306,19 @@ class CartoDBService {
             end: periods[1]
         };
         let query = WORLD;
-        if(forSubscription){
+        if (forSubscription) {
             query = this.getURLForSubscrition(WORLD);
         }
+        logger.debug('Query', query);
         let data = yield executeThunk(this.client, query, params);
-        logger.debug('data', data);
+        logger.debug('ForSubscription', forSubscription);
+        if (forSubscription && data.rows) {
+            
+            return data.rows;
+        }
         if (data.rows && data.rows.length === 1) {
             let result = data.rows[0];
-            if(data.rows.length > 0){
+            if (data.rows.length > 0) {
                 result.area_ha = areaHa;
             }
             result.period = this.getPeriodText(period);
@@ -310,7 +329,6 @@ class CartoDBService {
                 area_ha: areaHa
             };
         }
-        return null;
     }
 
     * latest(limit = 3) {
