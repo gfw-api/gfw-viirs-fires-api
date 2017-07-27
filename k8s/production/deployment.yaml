@@ -33,12 +33,12 @@ spec:
             value: app/src
           - name: LOCAL_URL
             value: http://{name}.default.svc.cluster.local:3600
-          - name: CT_URL
+          - name: GATEWAY_URL
             valueFrom:
                 secretKeyRef:
                   name: mssecrets
                   key: CT_URL
-          - name: CT_TOKEN
+          - name: GATEWAY_TOKEN
             valueFrom:
                 secretKeyRef:
                   name: mssecrets
