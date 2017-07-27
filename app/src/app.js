@@ -85,7 +85,7 @@ server.listen(port, function () {
             url: process.env.LOCAL_URL,
             active: true
         }
-    })
+    });
 });
 
 logger.info('Server started in port:' + port);
