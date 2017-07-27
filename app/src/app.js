@@ -78,14 +78,17 @@ server.listen(port, function () {
         logger: logger,
         app: app
     });
-    require('request')(`${process.env.CT_URL}/api/v1/microservice`, {
-        method: 'POST',
-        body: {
-            name: config.get('service.name'),
-            url: process.env.LOCAL_URL,
-            active: true
-        }
-    });
+    if (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') {
+        require('request')({
+            url: `${process.env.CT_URL}/api/v1/microservice`,
+            method: 'POST',
+            json: {
+                name: config.get('service.name'),
+                url: process.env.LOCAL_URL,
+                active: true
+            }
+        });
+    }
 });
 
 logger.info('Server started in port:' + port);
