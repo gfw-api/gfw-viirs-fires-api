@@ -69,15 +69,7 @@ var server = require('http').Server(app.callback());
 // In production environment, the port must be declared in environment variable
 var port = process.env.PORT || config.get('service.port');
 
-server.listen(port, function () {
-    require('vizz.microservice-client').register({
-        id: config.get('service.id'),
-        name: config.get('service.name'),
-        dirConfig: path.join(__dirname, '../microservice'),
-        dirPackage: path.join(__dirname, '../../'),
-        logger: logger,
-        app: app
-    });
+server.listen(port, function () {    
     if (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') {
         require('request')({
             url: `${process.env.CT_URL}/api/v1/microservice`,
@@ -89,6 +81,14 @@ server.listen(port, function () {
             }
         });
     }
+    require('vizz.microservice-client').register({
+        id: config.get('service.id'),
+        name: config.get('service.name'),
+        dirConfig: path.join(__dirname, '../microservice'),
+        dirPackage: path.join(__dirname, '../../'),
+        logger: logger,
+        app: app
+    });
 });
 
 logger.info('Server started in port:' + port);
