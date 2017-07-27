@@ -1,7 +1,7 @@
 'use strict';
 //load modules
 
-if(process.env.NODE_ENV === 'prod'){
+if (process.env.NODE_ENV === 'prod') {
     require('newrelic');
 }
 var config = require('config');
@@ -27,7 +27,7 @@ app.use(bodyParser({
 }));
 
 //catch errors and send in jsonapi standard. Always return vnd.api+json
-app.use(function*(next) {
+app.use(function* (next) {
     try {
         yield next;
     } catch (err) {
@@ -69,7 +69,7 @@ var server = require('http').Server(app.callback());
 // In production environment, the port must be declared in environment variable
 var port = process.env.PORT || config.get('service.port');
 
-server.listen(port, function() {
+server.listen(port, function () {
     require('vizz.microservice-client').register({
         id: config.get('service.id'),
         name: config.get('service.name'),
@@ -78,7 +78,14 @@ server.listen(port, function() {
         logger: logger,
         app: app
     });
-   
+    require('request')(`${process.env.CT_URL}/api/v1/microservice`, {
+        method: 'POST',
+        body: {
+            name: config.get('service.name'),
+            url: process.env.LOCAL_URL,
+            active: true
+        }
+    })
 });
 
 logger.info('Server started in port:' + port);
