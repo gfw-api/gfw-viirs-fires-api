@@ -16,7 +16,7 @@ case "$1" in
         ;;
     start)
         echo "Running Start"
-        exec pm2 start --env NODE_PATH:app/src app/index.js --no-daemon -i ${WORKERS}
+        exec npm start
         ;;
     *)
         exec "$@"

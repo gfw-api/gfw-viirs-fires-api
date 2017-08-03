@@ -45,7 +45,8 @@
     "lru-cache": "4.0.1",
     "mustache": "2.2.1",
     "newrelic": "1.27.1",
-    "vizz.microservice-client": "1.5.4"
+    "request": "^2.81.0",
+    "vizz.microservice-client": "1.6.1"
   },
   "devDependencies": {
     "co-mocha": "1.1.2",
