@@ -1,9 +1,6 @@
 'use strict';
 //load modules
 
-if (process.env.NODE_ENV === 'prod') {
-    require('newrelic');
-}
 var config = require('config');
 var logger = require('logger');
 var path = require('path');
@@ -81,6 +78,7 @@ server.listen(port, function () {
         app: app
     });
     if (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') {
+        logger.warn('Autoregistering');
         microserviceClient.autoDiscovery(config.get('service.name'));
     }
 });
