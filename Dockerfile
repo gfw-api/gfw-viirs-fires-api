@@ -5,7 +5,7 @@ ENV NAME gfw-viirs-fires-api
 ENV USER microservice
 
 RUN apk update && apk upgrade && \
-    apk add --no-cache --update bash git openssh python build-base
+    apk add --no-cache --update bash git openssh python build-base curl
 
 RUN addgroup $USER && adduser -s /bin/bash -D -G $USER $USER
 
