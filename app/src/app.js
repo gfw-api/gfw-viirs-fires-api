@@ -78,8 +78,8 @@ server.listen(port, function () {
         app: app
     });
     if (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') {
-        logger.warn('Autoregistering');
-        microserviceClient.autoDiscovery(config.get('service.name'));
+        logger.info('Autoregistering');
+        microserviceClient.autoDiscovery(config.get('service.name')).then(() => logger.info('Registered'), (err) => logger.error('Error registering', err));
     }
 });
 
