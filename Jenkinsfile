@@ -25,6 +25,7 @@ node {
   currentBuild.result = "SUCCESS"
 
   checkout scm
+  properties([pipelineTriggers([[$class: 'GitHubPushTrigger'], pollSCM('0 * * * *')])])
 
   try {
 
@@ -63,7 +64,6 @@ node {
             sh("kubectl apply -f k8s/staging/")
           }
           sh("kubectl set image deployment ${appName} ${appName}=${imageTag} --record")
-          sh("kubectl set image deployment ${appName} ${appName}-cron=${imageTag} --record")
           break
 
         // Roll out to production
@@ -79,15 +79,13 @@ node {
             }
           }
           catch(err) { // timeout reached or input false
-              def user = err.getCauses()[0].getUser()
+              sh("echo Aborted by user or timeout")
               if('SYSTEM' == user.toString()) { // SYSTEM means timeout.
                   didTimeout = true
               } else {
                   userInput = false
-                  echo "Aborted by: [${user}]"
               }
           }
-
           if (userInput == true && !didTimeout){
             sh("echo Deploying to PROD cluster")
             sh("kubectl config use-context gke_${GCLOUD_PROJECT}_${GCLOUD_GCE_ZONE}_${KUBE_PROD_CLUSTER}")
@@ -100,14 +98,15 @@ node {
             }
             sh("kubectl set image deployment ${appName} ${appName}=${imageTag} --record")
           } else {
-            echo "this was not successful"
-            currentBuild.result = 'FAILURE'
+            sh("echo NOT DEPLOYED")
+            currentBuild.result = 'SUCCESS'
           }
           break
 
         // Default behavior?
         default:
-          sh("Default -> do nothing")
+          echo "Default -> do nothing"
+          currentBuild.result = "SUCCESS"
       }
     }
 
