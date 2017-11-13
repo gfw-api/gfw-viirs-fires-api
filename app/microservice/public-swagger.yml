@@ -5,12 +5,12 @@ swagger: '2.0'
 info:
   title: GLobal Forest Watch API
   description: |
-    The Global Forest Watch API is currently in beta. Based on feedback from trusted testers, this document specifies new API changes that are currently under development. Interested in being a trusted tester? Contact the [Data Lab](mailTo:support@wri.com) at World Resources Institute.
+    The Global Forest Watch API is currently in beta. Based on feedback from trusted testers, this document specifies new API changes that are currently under development. Interested in being a trusted tester? Contact the [Data Lab](mailTo:support@wri.org) at World Resources Institute.
     
     All endpoints are accessible via http & https and are located at
     `https://production-api.globalforestwatch.org`.
     
-    Forest change measures tree cover loss, tree cover gain, or forest disturbance. The following forest change data are available through the API: 
+  Forest change measures tree cover loss, tree cover gain, or forest disturbance. The following forest change data are available through the API: 
     * University of Maryland tree cover loss & gain 
     * FORMA alerts
     * IMAZON SAD alerts
@@ -48,7 +48,7 @@ info:
   contact:
     name: API Support
     url: http://www.globalforestwatch.org
-    email: support@wri.com
+    email: support@wri.org
   license:
     name: MIT License (MIT)
     url: https://opensource.org/licenses/MIT
@@ -105,9 +105,10 @@ paths:
         - name: period
           in: query
           description: |
-            Period of time 
-            ```2015-01-01,2016-12-01```
-          required: true
+            Period of time. NB: This MS queries CARTO table vnp14imgtdl_nrt_global_7d, which is limited to the last 7 days. This period filter will applied when used, but it can't query data that doesn't exist. As such, any queries outside of the last 7 days will return zero fires. 
+            ```2016-12-01,2016-12-07```
+          required: false
+          default: "past 24 hours" 
           type: string
 
       responses:
@@ -180,12 +181,13 @@ paths:
           schema:
             $ref: '#/definitions/GeoJsonBodyRequest'
         - name: period
-          in: query
           description: |
-            Period of time 
-            ```2015-01-01,2016-12-01```
-          required: true
+            Period of time. NB: This MS queries CARTO table vnp14imgtdl_nrt_global_7d, which is limited to the last 7 days. This period filter will applied when used, but it can't query data that doesn't exist. As such, any queries outside of the last 7 days will return zero fires. 
+            ```2016-12-01,2016-12-07```
+          required: false
+          default: "past 24 hours" 
           type: string
+          in: query
 
       responses:
         200:
@@ -241,9 +243,10 @@ paths:
         - name: period
           in: query
           description: |
-            Period of time 
-            ```2015-01-01,2016-12-01```
-          required: true
+            Period of time. NB: This MS queries CARTO table vnp14imgtdl_nrt_global_7d, which is limited to the last 7 days. This period filter will applied when used, but it can't query data that doesn't exist. As such, any queries outside of the last 7 days will return zero fires. 
+            ```2016-12-01,2016-12-07```
+          required: false
+          default: "past 24 hours" 
           type: string
       responses:
         200:
@@ -293,11 +296,11 @@ paths:
         - name: period
           in: query
           description: |
-            Period of time 
-            ```2015-01-01,2016-12-01```
-          required: true
+            Period of time. NB: This MS queries CARTO table vnp14imgtdl_nrt_global_7d, which is limited to the last 7 days. This period filter will applied when used, but it can't query data that doesn't exist. As such, any queries outside of the last 7 days will return zero fires. 
+            ```2016-12-01,2016-12-07```
+          required: false
+          default: "past 24 hours" 
           type: string
-
       responses:
         200:
           description: Results obtained
@@ -346,9 +349,10 @@ paths:
         - name: period
           in: query
           description: |
-            Period of time 
-            ```2015-01-01,2016-12-01```
-          required: true
+            Period of time. NB: This MS queries CARTO table vnp14imgtdl_nrt_global_7d, which is limited to the last 7 days. This period filter will applied when used, but it can't query data that doesn't exist. As such, any queries outside of the last 7 days will return zero fires. 
+            ```2016-12-01,2016-12-07```
+          required: false
+          default: "past 24 hours" 
           type: string
 
       responses:
@@ -406,9 +410,10 @@ paths:
         - name: period
           in: query
           description: |
-            Period of time 
-            ```2015-01-01,2016-12-01```
-          required: true
+            Period of time. NB: This MS queries CARTO table vnp14imgtdl_nrt_global_7d, which is limited to the last 7 days. This period filter will applied when used, but it can't query data that doesn't exist. As such, any queries outside of the last 7 days will return zero fires. 
+            ```2016-12-01,2016-12-07```
+          required: false
+          default: "past 24 hours" 
           type: string
 
       responses:
