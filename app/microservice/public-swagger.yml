@@ -10,7 +10,7 @@ info:
     All endpoints are accessible via http & https and are located at
     `https://production-api.globalforestwatch.org`.
     
-  Forest change measures tree cover loss, tree cover gain, or forest disturbance. The following forest change data are available through the API: 
+    Forest change measures tree cover loss, tree cover gain, or forest disturbance. The following forest change data are available through the API: 
     * University of Maryland tree cover loss & gain 
     * FORMA alerts
     * IMAZON SAD alerts
