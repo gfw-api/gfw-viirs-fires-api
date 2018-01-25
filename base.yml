@@ -1,7 +1,7 @@
 base:
   build: .
   ports:
-    - "3600:3600"
+    - "3700:3600"
   environment:
     PORT: 3600
     NODE_PATH: app/src
