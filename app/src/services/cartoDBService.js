@@ -16,6 +16,7 @@ const WORLD = `
             AND ST_INTERSECTS(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), the_geom)
             AND confidence='nominal'
         `;
+const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/10000 as area_ha`;
 
 const ISO = `with p as (SELECT  the_geom
            FROM gadm2_countries_simple
@@ -407,6 +408,7 @@ class CartoDBService {
         if (group) {
             query = this.getQueryForGroup(WORLD);
         }
+        let dataArea = yield executeThunk(this.client, AREA, params);
         
         logger.debug('Query', query);
         let data = yield executeThunk(this.client, query, params);
@@ -421,19 +423,17 @@ class CartoDBService {
             }
             return data.rows;
         }
+        let result = {
+            area_ha: dataArea.rows[0].area_ha,
+            period: this.getPeriodText(period),
+            downloadUrls: this.getDownloadUrls(WORLD, params)
+        };
+        
         if (data.rows && data.rows.length === 1) {
-            let result = data.rows[0];
-            if (data.rows.length > 0) {
-                result.area_ha = areaHa;
-            }
-            result.period = this.getPeriodText(period);
-            result.downloadUrls = this.getDownloadUrls(WORLD, params);
-            return result;
-        } else {
-            return {
-                area_ha: areaHa
-            };
-        }
+            result.value = data.rows[0].value || 0;            
+            
+        } 
+        return result;
     }
 
     * latest(limit = 3) {
