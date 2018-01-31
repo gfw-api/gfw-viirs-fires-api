@@ -102,7 +102,7 @@ class ViirsFiresRouter {
         logger.info('Obtaining world data with geostore');
         this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
         try{            
-            let data = yield CartoDBService.getWorldWithGeojson(ViirsFiresRouter.checkGeojson(this.request.body.geojson), this.query.forSubscription, this.query.period,  this.query.group === 'true');
+            let data = yield CartoDBService.getWorldWithGeojson(ViirsFiresRouter.checkGeojson(this.request.body.geojson), this.query.forSubscription, this.query.period, null,  this.query.group === 'true');
 
             this.body = ViirsFiresSerializer.serialize(data);
         } catch(err){
