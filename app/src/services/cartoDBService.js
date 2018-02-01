@@ -161,8 +161,8 @@ class CartoDBService {
     }
     
     getQueryForGroup(query) {
-        let queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT date_trunc(\'day\', acq_date) as "day", COUNT(pt.*) AS value');
-        queryFinal += ' GROUP BY 1';
+        let queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT * from ( SELECT date_trunc(\'day\', acq_date) as "day", COUNT(pt.*) AS value');
+        queryFinal += ' GROUP BY 1 ) g where g.day is not null';
         return queryFinal;
     }
 
@@ -226,6 +226,7 @@ class CartoDBService {
         }
         let geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1);
         let data = yield executeThunk(this.client, query, params);
+        
         if (geostore) {
             if (forSubscription && data.rows) {
                 return data.rows;
@@ -279,7 +280,7 @@ class CartoDBService {
                 }
                 return data.rows;
             }
-            logger.debug('data', data);
+            
             if (data.rows && data.rows.length === 1) {
                 let result = data.rows[0];
                 result.area_ha = geostore.areaHa;
