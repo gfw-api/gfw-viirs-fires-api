@@ -31,7 +31,7 @@ const ISO = `with p as (SELECT  the_geom
 
 const ID1 = `with p as (SELECT  the_geom
            FROM gadm28_adm2_geostore
-           WHERE iso = UPPER('{{iso}}')  AND id_1 = {{id1}} AND id_2 = {{id2}})
+           WHERE iso = UPPER('{{iso}}')  AND id_1 = {{id1}})
             SELECT COUNT(pt.*) AS value
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
@@ -41,7 +41,7 @@ const ID1 = `with p as (SELECT  the_geom
 
 const ID2 = `with p as (SELECT  the_geom
             FROM gadm2_provinces_simple
-            WHERE iso = UPPER('{{iso}}')  AND id_1 = {{id1}})
+            WHERE iso = UPPER('{{iso}}')  AND id_1 = {{id1}} AND id_2 = {{id2}})
             SELECT COUNT(pt.*) AS value
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
