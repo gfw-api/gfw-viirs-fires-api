@@ -14,7 +14,7 @@ const WORLD = `
         where acq_date >= '{{begin}}'
             AND acq_date <= '{{end}}'
             AND ST_INTERSECTS(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), the_geom)
-            AND confidence='nominal'
+            AND confidence='normal'
         `;
 const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 4326), TRUE)/10000 as area_ha`;
 
@@ -25,7 +25,7 @@ const ISO = `with p as (SELECT  the_geom
             FROM p
             inner join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
             and
-             confidence='nominal' AND acq_date >= '{{begin}}'::date
+             confidence='normal' AND acq_date >= '{{begin}}'::date
              AND acq_date <= '{{end}}'::date`;
 
 
@@ -36,7 +36,7 @@ const ID1 = `with p as (SELECT  the_geom
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
             and
-             confidence='nominal' AND acq_date >= '{{begin}}'::date
+             confidence='normal' AND acq_date >= '{{begin}}'::date
              AND acq_date <= '{{end}}'::date`;
 
 const ID2 = `with p as (SELECT  the_geom
@@ -46,14 +46,14 @@ const ID2 = `with p as (SELECT  the_geom
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
             and
-            confidence='nominal' AND acq_date >= '{{begin}}'::date
+            confidence='normal' AND acq_date >= '{{begin}}'::date
             AND acq_date <= '{{end}}'::date`;
 
 const USE = `with p as (SELECT the_geom FROM {{useTable}} WHERE cartodb_id = {{pid}})
         SELECT COUNT(pt.*) AS value
         FROM p
         left join vnp14imgtdl_nrt_global_7d pt on ( ST_Intersects(p.the_geom, pt.the_geom) AND acq_date >= '{{begin}}'
-        AND acq_date <= '{{end}}' AND confidence='nominal')
+        AND acq_date <= '{{end}}' AND confidence='normal')
         `;
 
 const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
@@ -67,7 +67,7 @@ const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
                     on ST_Intersects(pt.the_geom, p.the_geom)
                     AND acq_date >= '{{begin}}'
                     AND acq_date <= '{{end}}'
-                    AND confidence='nominal'
+                    AND confidence='normal'
         `;
 
 const LATEST = `SELECT DISTINCT acq_date as date
