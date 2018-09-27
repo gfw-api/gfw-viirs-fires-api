@@ -48,7 +48,7 @@ class ViirsFiresRouter {
                 useTable = 'gfw_logging';
                 break;
             default:
-                this.throw(400, 'Name param invalid');
+                useTable = this.params.name;
         }
         if (!useTable) {
             this.throw(404, 'Name not found');
