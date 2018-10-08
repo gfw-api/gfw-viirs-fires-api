@@ -1,62 +1,169 @@
 {
     "id": "#(service.id)",
     "name": "#(service.name)",
-    "tags": ["gfw"],
-    "urls": [{
-        "url": "/v1/viirs-active-fires/admin/:iso",
-        "method": "GET",
-        "endpoints": [{
+    "tags": [
+        "gfw"
+    ],
+    "urls": [
+        {
+            "url": "/v2/viirs-active-fires/admin/:iso",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires/admin/:iso"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires/admin/:iso/:id1",
-        "method": "GET",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires/admin/:iso"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires/admin/:iso/:id1",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires/admin/:iso/:id1"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires/admin/:iso/:id1/:id2",
-        "method": "GET",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires/admin/:iso/:id1"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires/admin/:iso/:id1/:id2",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires/admin/:iso/:id1/:id2"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires/use/:name/:id",
-        "method": "GET",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires/admin/:iso/:id1/:id2"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires/use/:name/:id",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires/use/:name/:id"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires/wdpa/:id",
-        "method": "GET",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires/use/:name/:id"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires/wdpa/:id",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires/wdpa/:id"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires",
-        "method": "GET",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires/wdpa/:id"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires/latest",
-        "method": "GET",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires/latest",
             "method": "GET",
-            "path": "/api/v1/viirs-active-fires/latest"
-        }]
-    }, {
-        "url": "/v1/viirs-active-fires",
-        "method": "POST",
-        "endpoints": [{
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v2/viirs-active-fires/latest"
+                }
+            ]
+        },
+        {
+            "url": "/v2/viirs-active-fires",
             "method": "POST",
-            "path": "/api/v1/viirs-active-fires"
-        }]
-    }]
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/api/v2/viirs-active-fires"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires/admin/:iso",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires/admin/:iso"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires/admin/:iso/:id1",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires/admin/:iso/:id1"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires/admin/:iso/:id1/:id2",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires/admin/:iso/:id1/:id2"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires/use/:name/:id",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires/use/:name/:id"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires/wdpa/:id",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires/wdpa/:id"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires/latest",
+            "method": "GET",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/v1/viirs-active-fires/latest"
+                }
+            ]
+        },
+        {
+            "url": "/v1/viirs-active-fires",
+            "method": "POST",
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/api/v1/viirs-active-fires"
+                }
+            ]
+        }
+    ]
 }
