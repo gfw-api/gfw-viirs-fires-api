@@ -11,7 +11,7 @@ var router = new Router({
     prefix: '/viirs-active-fires'
 });
 
-class ViirsFiresRouter {
+class ViirsFiresRouterV2 {
     static * getAdm0() {
         logger.info('Obtaining national data');
         let data = yield CartoDBServiceV2.getAdm0(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true');
@@ -82,8 +82,7 @@ class ViirsFiresRouter {
         logger.info('Obtaining world data with geostore');
         this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
         try{            
-            let data = yield CartoDBServiceV2.getWorldWithGeojson(ViirsFiresRouter.checkGeojson(this.request.body.geojson), this.query.forSubscription, this.query.period, null,  this.query.group === 'true');
-
+            let data = yield CartoDBServiceV2.getWorldWithGeojson(ViirsFiresRouterV2.checkGeojson(this.request.body.geojson), this.query.forSubscription, this.query.period, null,  this.query.group === 'true');
             this.body = ViirsFiresSerializerV2.serialize(data);
         } catch(err){
             if(err instanceof NotFound){
@@ -110,16 +109,14 @@ var isCached = function*(next) {
     yield next;
 };
 
-
-
-router.get('/admin/:iso', isCached, ViirsFiresRouter.getAdm0);
-router.get('/admin/:iso/:id1', isCached, ViirsFiresRouter.getAdm1);
-router.get('/admin/:iso/:id1/:id2', isCached, ViirsFiresRouter.getAdm2);
-router.get('/use/:name/:id', isCached, ViirsFiresRouter.use);
-router.get('/wdpa/:id', isCached, ViirsFiresRouter.wdpa);
-router.get('/', isCached, ViirsFiresRouter.world);
-router.post('/', ViirsFiresRouter.worldWithGeojson);
-router.get('/latest', isCached, ViirsFiresRouter.latest);
+router.get('/admin/:iso', isCached, ViirsFiresRouterV2.getAdm0);
+router.get('/admin/:iso/:id1', isCached, ViirsFiresRouterV2.getAdm1);
+router.get('/admin/:iso/:id1/:id2', isCached, ViirsFiresRouterV2.getAdm2);
+router.get('/use/:name/:id', isCached, ViirsFiresRouterV2.use);
+router.get('/wdpa/:id', isCached, ViirsFiresRouterV2.wdpa);
+router.get('/', isCached, ViirsFiresRouterV2.world);
+router.post('/', ViirsFiresRouterV2.worldWithGeojson);
+router.get('/latest', isCached, ViirsFiresRouterV2.latest);
 
 
 module.exports = router;

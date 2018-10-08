@@ -75,10 +75,10 @@ const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
                     AND (confidence='normal' OR confidence = 'nominal') 
         `;
 
-const LATEST = `with a AS (SELECT DISTINCT acq_date as date
+const LATEST = `with a AS (SELECT DISTINCT acq_date
         FROM vnp14imgtdl_nrt_global_7d
         WHERE acq_date IS NOT NULL)
-        SELECT MAX(date) AS latest`;
+        SELECT MAX(acq_date) AS latest FROM a`;
 
 
 var executeThunk = function (client, sql, params) {
@@ -147,7 +147,7 @@ class CartoDBServiceV2 {
             case 3:
                 return 'Past 72 hours';
             default:
-                return 'Past week';
+                return period;
         }
     }
 
@@ -294,7 +294,7 @@ class CartoDBServiceV2 {
         }
         let area = yield executeThunk(this.client, GIDAREA, { table: 'gadm36_adm2', level: '2', gid: params.id2 });
         if (area.rows && area.rows.length) {
-            result.value = null;
+            result.value = 0;
             result.area_ha = area.areaHa;
             return result;
         }

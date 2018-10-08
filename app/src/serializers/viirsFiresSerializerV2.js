@@ -14,7 +14,7 @@ var viirsFiresSerializerV2 = new JSONAPISerializer('viirs-active-fires', {
 });
 
 var viirsFiresLatestSerializer = new JSONAPISerializer('viirs-latest', {
-    attributes: ['date'],
+    attributes: ['latest'],
     typeForAttribute: function (attribute, record) {
         return attribute;
     }
