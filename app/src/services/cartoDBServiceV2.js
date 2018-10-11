@@ -323,8 +323,16 @@ class CartoDBServiceV2 {
         if (group) {
             query = this.getQueryForGroup(USE);
         }
-        let data = yield executeThunk(this.client, USE, params);
-        
+        let data = yield executeThunk(this.client, query, params);
+        if (forSubscription && data.rows) {
+            return data.rows;
+        }
+        if (group && data.rows) {
+            if (data.rows.length > 0 && data.rows[0].day === null) {
+                return [];
+            }
+            return data.rows;
+        }
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
             result.id = id;
@@ -338,6 +346,13 @@ class CartoDBServiceV2 {
             result.id = id;
             result.value = 0;
             return result;
+        }
+        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
+        if(geostore){
+            return {
+                value: 0,
+                area_ha: geostore.area_ha
+            }
         }
         return null;
     }
@@ -357,8 +372,16 @@ class CartoDBServiceV2 {
         if (group) {
             query = this.getQueryForGroup(WDPA);
         }
-
-        let data = yield executeThunk(this.client, WDPA, params);
+        let data = yield executeThunk(this.client, query, params);
+        if (forSubscription && data.rows) {
+            return data.rows;
+        }
+        if (group && data.rows) {
+            if (data.rows.length > 0 && data.rows[0].day === null) {
+                return [];
+            }
+            return data.rows;
+        }
         if (data.rows && data.rows.length > 0) {
             let result = data.rows[0];
             result.id = wdpaid;
@@ -372,6 +395,13 @@ class CartoDBServiceV2 {
             result.id = wdpaid;
             result.value = 0;
             return result;
+        }
+        const geostore = yield GeostoreService.getGeostoreByUse(wdpaid);
+        if(geostore){
+            return {
+                value: 0,
+                area_ha: geostore.area_ha
+            }
         }
         return null;
     }
