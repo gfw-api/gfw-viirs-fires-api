@@ -8,7 +8,7 @@ var viirsFiresSerializerV2 = new JSONAPISerializer('viirs-active-fires', {
         return attribute;
     },
     downloadUrls:{
-        attributes: ['csv', 'geojson', 'kml', 'shp', 'svg']
+        attributes: ['csv', 'json', 'kml', 'shp', 'svg']
     },
     keyForAttribute: 'camelCase'
 });
