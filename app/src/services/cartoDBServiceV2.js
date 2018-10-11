@@ -54,25 +54,31 @@ const ID2 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{sim
             AND acq_date <= '{{end}}'::date
             GROUP BY area_ha`;
 
-const USE = `with p as (SELECT the_geom FROM {{useTable}} WHERE cartodb_id = {{pid}})
-        SELECT COUNT(pt.*) AS value
+const USEAREA = `select area_ha FROM {{useTable}} WHERE cartodb_id = {{pid}}`;
+
+const USE = `with p as (SELECT area_ha, the_geom FROM {{useTable}} WHERE cartodb_id = {{pid}})
+        SELECT COUNT(pt.*) AS value, p.area_ha
         FROM p
         left join vnp14imgtdl_nrt_global_7d pt on ( ST_Intersects(p.the_geom, pt.the_geom) AND acq_date >= '{{begin}}'
         AND acq_date <= '{{end}}' AND (confidence='normal' OR confidence = 'nominal'))
+        GROUP BY p.area_ha
         `;
+
+const WDPAAREA = `select gis_area*100 as area_ha FROM wdpa_protected_areas WHERE wdpaid = {{wdpaid}}`;
 
 const WDPA = `with p as (SELECT CASE when marine::numeric = 2 then null
         WHEN ST_NPoints(the_geom)<=18000 THEN the_geom
         WHEN ST_NPoints(the_geom) BETWEEN 18000 AND 50000 THEN ST_RemoveRepeatedPoints(the_geom, 0.001)
         ELSE ST_RemoveRepeatedPoints(the_geom, 0.005)
-        END as the_geom FROM wdpa_protected_areas where wdpaid={{wdpaid}})
-        SELECT COUNT(pt.*) AS value 
+        END as the_geom, gis_area*100 as area_ha FROM wdpa_protected_areas where wdpaid={{wdpaid}})
+        SELECT COUNT(pt.*) AS value, p.area_ha
         FROM p
         left join vnp14imgtdl_nrt_global_7d pt
                     on ST_Intersects(pt.the_geom, p.the_geom)
                     AND acq_date >= '{{begin}}'
                     AND acq_date <= '{{end}}'
-                    AND (confidence='normal' OR confidence = 'nominal') 
+                    AND (confidence='normal' OR confidence = 'nominal')
+        GROUP BY area_ha
         `;
 
 const LATEST = `with a AS (SELECT DISTINCT acq_date
@@ -153,7 +159,7 @@ class CartoDBServiceV2 {
 
     getDownloadUrls(query, params) {
         try {
-            let formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
+            let formats = ['csv', 'json', 'kml', 'shp', 'svg'];
             let download = {};
             let queryFinal = Mustache.render(query, params);
             queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
@@ -317,28 +323,35 @@ class CartoDBServiceV2 {
         if (group) {
             query = this.getQueryForGroup(USE);
         }
-        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
         let data = yield executeThunk(this.client, query, params);
-        if (geostore) {
-            if (forSubscription && data.rows) {
-                return data.rows;
+        if (forSubscription && data.rows) {
+            return data.rows;
+        }
+        if (group && data.rows) {
+            if (data.rows.length > 0 && data.rows[0].day === null) {
+                return [];
             }
-            if (group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null) {
-                    return [];
-                }
-                return data.rows;
-            }
-            if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
-                result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(USE, params);
-                return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
+            return data.rows;
+        }
+        if (data.rows && data.rows.length > 0) {
+            let result = data.rows[0];
+            result.id = id;
+            result.period = this.getPeriodText(period);
+            result.downloadUrls = this.getDownloadUrls(USE, params);
+            return result;
+        }
+        let areas = yield executeThunk(this.client, USEAREA, params);
+        if (areas.rows && areas.rows.length > 0) {
+            let result = areas.rows[0];
+            result.id = id;
+            result.value = 0;
+            return result;
+        }
+        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
+        if(geostore){
+            return {
+                value: 0,
+                area_ha: geostore.area_ha
             }
         }
         return null;
@@ -359,35 +372,39 @@ class CartoDBServiceV2 {
         if (group) {
             query = this.getQueryForGroup(WDPA);
         }
-        const geostore = yield GeostoreService.getGeostoreByWdpa(wdpaid);
-
         let data = yield executeThunk(this.client, query, params);
-        if (geostore) {
-            if (forSubscription && data.rows) {
-                return data.rows;
+        if (forSubscription && data.rows) {
+            return data.rows;
+        }
+        if (group && data.rows) {
+            if (data.rows.length > 0 && data.rows[0].day === null) {
+                return [];
             }
-            if (group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null) {
-                    return [];
-                }
-                return data.rows;
-            }
-            if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
-                result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(WDPA, params);
-                return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
+            return data.rows;
+        }
+        if (data.rows && data.rows.length > 0) {
+            let result = data.rows[0];
+            result.id = wdpaid;
+            result.period = period;
+            result.downloadUrls = this.getDownloadUrls(WDPA, params);
+            return result;
+        }
+        let areas = yield executeThunk(this.client, WDPAAREA, params);
+        if (areas.rows && areas.rows.length > 0) {
+            let result = areas.rows[0];
+            result.id = wdpaid;
+            result.value = 0;
+            return result;
+        }
+        const geostore = yield GeostoreService.getGeostoreByUse(wdpaid);
+        if(geostore){
+            return {
+                value: 0,
+                area_ha: geostore.area_ha
             }
         }
         return null;
     }
-
-
 
     * getWorld(hashGeoStore, forSubscription, period = defaultDate()) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
