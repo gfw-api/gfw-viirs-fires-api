@@ -45,7 +45,7 @@ const ID1 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{sim
 
 const ID2 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
             FROM gadm36_adm2
-            WHERE iso = UPPER('{{iso}}') AND gid_1 = '{{id1}}' AND gid_1 = '{{id2}}')
+            WHERE iso = UPPER('{{iso}}') AND gid_1 = '{{id1}}' AND gid_2 = '{{id2}}')
             SELECT COUNT(pt.*) AS value, area_ha
             FROM p
             left join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)
