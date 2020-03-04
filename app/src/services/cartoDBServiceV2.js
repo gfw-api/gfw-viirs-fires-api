@@ -17,7 +17,7 @@ const AREA = `select ST_Area(ST_SetSRID(ST_GeomFromGeoJSON('{{{geojson}}}'), 432
 
 const GIDAREA = `select area_ha FROM {{table}} WHERE gid_{{level}} = '{{gid}}'`;
 
-const ISO = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
+const ISO = `with p as (SELECT iso, area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
            FROM gadm36_countries
            WHERE iso = UPPER('{{iso}}'))
             SELECT COUNT(pt.*) AS value, area_ha
@@ -26,10 +26,10 @@ const ISO = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{sim
             and
              (confidence='normal' OR confidence = 'nominal') AND acq_date >= '{{begin}}'::date
              AND acq_date <= '{{end}}'::date
-             GROUP BY area_ha`;
+             GROUP BY area_ha, iso, pt.cartodb_id`;
 
 
-const ID1 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
+const ID1 = `with p as (SELECT iso, area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
            FROM gadm36_adm1
            WHERE iso = UPPER('{{iso}}') AND gid_1 = '{{id1}}')
             SELECT COUNT(pt.*) AS value, area_ha
@@ -38,9 +38,9 @@ const ID1 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{sim
             and
             (confidence='normal' OR confidence = 'nominal') AND acq_date >= '{{begin}}'::date
              AND acq_date <= '{{end}}'::date
-             GROUP BY area_ha`;
+             GROUP BY area_ha, iso, pt.cartodb_id`;
 
-const ID2 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
+const ID2 = `with p as (SELECT iso, area_ha, ST_makevalid(ST_Simplify(the_geom, {{simplify}})) AS the_geom
             FROM gadm36_adm2
             WHERE iso = UPPER('{{iso}}') AND gid_1 = '{{id1}}' AND gid_2 = '{{id2}}')
             SELECT COUNT(pt.*) AS value, area_ha
@@ -49,7 +49,7 @@ const ID2 = `with p as (SELECT area_ha, ST_makevalid(ST_Simplify(the_geom, {{sim
             and
             (confidence='normal' OR confidence = 'nominal') AND acq_date >= '{{begin}}'::date
             AND acq_date <= '{{end}}'::date
-            GROUP BY area_ha`;
+            GROUP BY area_ha, iso, pt.cartodb_id`;
 
 const USEAREA = `select area_ha FROM {{useTable}} WHERE cartodb_id = {{pid}}`;
 
