@@ -1,8 +1,10 @@
-test:
-  extends:
-    file: base.yml
-    service: base
-  container_name: gfw-fires-api-test
-  environment:
-    NODE_ENV: test
-  command: test
+version: "3"
+services:
+  test:
+    build: .
+    container_name: gfw-fires-api-test
+    environment:
+      NODE_ENV: test
+      PORT: 3600
+      NODE_PATH: app/src
+    command: test

@@ -1,12 +1,9 @@
-'use strict';
 const logger = require('logger');
-const path = require('path');
 const config = require('config');
 const CartoDB = require('cartodb');
 const Mustache = require('mustache');
 const NotFound = require('errors/notFound');
 const GeostoreService = require('services/geostoreService');
-const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 
 const WORLD = `
         SELECT COUNT(pt.*) AS value 
@@ -77,42 +74,81 @@ const LATEST = `SELECT DISTINCT acq_date as date
         LIMIT {{limit}}`;
 
 
-var executeThunk = function (client, sql, params) {
-    return function (callback) {
+const executeThunk = function executeThunk(client, sql, params) {
+    return (callback) => {
         logger.debug(Mustache.render(sql, params));
-        client.execute(sql, params).done(function (data) {
+        client.execute(sql, params).done((data) => {
             callback(null, data);
-        }).error(function (err) {
+        }).error((err) => {
             callback(err, null);
         });
     };
 };
 
-var deserializer = function (obj) {
-    return function (callback) {
-        new JSONAPIDeserializer({
-            keyForAttribute: 'camelCase'
-        }).deserialize(obj, callback);
-    };
+
+const getToday = () => {
+    const today = new Date();
+    return `${today.getFullYear().toString()}-${(today.getMonth() + 1).toString()}-${today.getDate().toString()}`;
+};
+
+const getYesterday = () => {
+    const yesterday = new Date(Date.now() - (24 * 60 * 60 * 1000));
+    return `${yesterday.getFullYear().toString()}-${(yesterday.getMonth() + 1).toString()}-${yesterday.getDate().toString()}`;
 };
 
 
-let getToday = function () {
-    let today = new Date();
-    return `${today.getFullYear().toString()}-${(today.getMonth()+1).toString()}-${today.getDate().toString()}`;
+const defaultDate = () => {
+    const to = getToday();
+    const from = getYesterday();
+    return `${from},${to}`;
 };
 
-let getYesterday = function () {
-    let yesterday = new Date(Date.now() - (24 * 60 * 60 * 1000));
-    return `${yesterday.getFullYear().toString()}-${(yesterday.getMonth()+1).toString()}-${yesterday.getDate().toString()}`;
+const getPeriodText = (period) => {
+    const periods = period.split(',');
+    const days = (new Date(periods[1]) - new Date(periods[0])) / (24 * 60 * 60 * 1000);
+
+    switch (days) {
+
+        case 1:
+            return 'Past 24 hours';
+        case 2:
+            return 'Past 48 hours';
+        case 3:
+            return 'Past 72 hours';
+        default:
+            return 'Past week';
+
+    }
 };
 
-
-let defaultDate = function () {
-    let to = getToday();
-    let from = getYesterday();
-    return from + ',' + to;
+// eslint-disable-next-line consistent-return
+const getDownloadUrls = (query, params) => {
+    try {
+        const formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
+        const download = {};
+        let queryFinal = Mustache.render(query, params);
+        queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+        queryFinal = encodeURIComponent(queryFinal);
+        for (let i = 0, { length } = formats; i < length; i++) {
+            download[formats[i]] = `${this.apiUrl}?q=${queryFinal}&format=${formats[i]}`;
+        }
+        return download;
+    } catch (err) {
+        logger.error(err);
+    }
 };
+
+const getURLForSubscription = (query) => {
+    const queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+    return queryFinal;
+};
+
+const getQueryForGroup = (query) => {
+    let queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT * from ( SELECT date_trunc(\'day\', acq_date) as "day", COUNT(pt.*) AS value');
+    queryFinal += ' GROUP BY 1 ) g where g.day is not null';
+    return queryFinal;
+};
+
 
 class CartoDBService {
 
@@ -123,265 +159,221 @@ class CartoDBService {
         this.apiUrl = config.get('cartoDB.apiUrl');
     }
 
-    getPeriodText(period) {
-        let periods = period.split(',');
-        let days = (new Date(periods[1]) - new Date(periods[0])) / (24 * 60 * 60 * 1000);
-
-        switch (days) {
-            case 1:
-                return 'Past 24 hours';
-            case 2:
-                return 'Past 48 hours';
-            case 3:
-                return 'Past 72 hours';
-            default:
-                return 'Past week';
-        }
-    }
-
-    getDownloadUrls(query, params) {
-        try {
-            let formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
-            let download = {};
-            let queryFinal = Mustache.render(query, params);
-            queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
-            queryFinal = encodeURIComponent(queryFinal);
-            for (let i = 0, length = formats.length; i < length; i++) {
-                download[formats[i]] = this.apiUrl + '?q=' + queryFinal + '&format=' + formats[i];
-            }
-            return download;
-        } catch (err) {
-            logger.error(err);
-        }
-    }
-
-    getURLForSubscrition(query) {
-        let queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
-        return queryFinal;
-    }
-    
-    getQueryForGroup(query) {
-        let queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT * from ( SELECT date_trunc(\'day\', acq_date) as "day", COUNT(pt.*) AS value');
-        queryFinal += ' GROUP BY 1 ) g where g.day is not null';
-        return queryFinal;
-    }
-
     * getNational(iso, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining national of iso %s', iso);
-        let periods = period.split(',');
-        var params = {
-            iso: iso,
+        const periods = period.split(',');
+        const params = {
+            iso,
             begin: periods[0],
             end: periods[1]
         };
         let query = ISO;
         if (forSubscription) {
-            query = this.getURLForSubscrition(ISO);
+            query = getURLForSubscription(ISO);
         }
         if (group) {
-            query = this.getQueryForGroup(ISO);
+            query = getQueryForGroup(ISO);
         }
-        let geostore = yield GeostoreService.getGeostoreByIso(iso);
-        let data = yield executeThunk(this.client, query, params);
+        const geostore = yield GeostoreService.getGeostoreByIso(iso);
+        const data = yield executeThunk(this.client, query, params);
         if (geostore) {
             if (forSubscription && data.rows) {
                 return data.rows;
             }
-            if(group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null){
+            if (group && data.rows) {
+                if (data.rows.length > 0 && data.rows[0].day === null) {
                     return [];
                 }
                 return data.rows;
             }
             if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
+                const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(ISO, params);
+                result.period = getPeriodText(period);
+                result.downloadUrls = getDownloadUrls(ISO, params);
                 return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
             }
+            return {
+                area_ha: geostore.areaHa
+            };
+
         }
         return null;
     }
 
     * getSubnational(iso, id1, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
-        let periods = period.split(',');
-        let params = {
-            iso: iso,
-            id1: id1,
+        const periods = period.split(',');
+        const params = {
+            iso,
+            id1,
             begin: periods[0],
             end: periods[1]
         };
         let query = ID1;
         if (forSubscription) {
-            query = this.getURLForSubscrition(ID1);
+            query = getURLForSubscription(ID1);
         }
         if (group) {
-            query = this.getQueryForGroup(ID1);
+            query = getQueryForGroup(ID1);
         }
-        let geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1);
-        let data = yield executeThunk(this.client, query, params);
-        
+        const geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1);
+        const data = yield executeThunk(this.client, query, params);
+
         if (geostore) {
             if (forSubscription && data.rows) {
                 return data.rows;
             }
-            if(group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null){
+            if (group && data.rows) {
+                if (data.rows.length > 0 && data.rows[0].day === null) {
                     return [];
                 }
                 return data.rows;
             }
             if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
+                const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(ID1, params);
+                result.period = getPeriodText(period);
+                result.downloadUrls = getDownloadUrls(ID1, params);
                 return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
             }
+            return {
+                area_ha: geostore.areaHa
+            };
+
         }
         return null;
     }
 
     * getRegion(iso, id1, id2, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining subnational of iso %s and id1', iso, id1);
-        let periods = period.split(',');
-        let params = {
-            iso: iso,
-            id1: id1,
+        const periods = period.split(',');
+        const params = {
+            iso,
+            id1,
             begin: periods[0],
             end: periods[1]
         };
         let query = ID2;
         if (forSubscription) {
-            query = this.getURLForSubscrition(ID2);
+            query = getURLForSubscription(ID2);
         }
         if (group) {
-            query = this.getQueryForGroup(ID2);
+            query = getQueryForGroup(ID2);
         }
-        let geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1, id2);
-        let data = yield executeThunk(this.client, query, params);
+        const geostore = yield GeostoreService.getGeostoreByIsoAndId(iso, id1, id2);
+        const data = yield executeThunk(this.client, query, params);
         if (geostore) {
             if (forSubscription && data.rows) {
                 return data.rows;
             }
-            if(group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null){
+            if (group && data.rows) {
+                if (data.rows.length > 0 && data.rows[0].day === null) {
                     return [];
                 }
                 return data.rows;
             }
-            
+
             if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
+                const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(ID1, params);
+                result.period = getPeriodText(period);
+                result.downloadUrls = getDownloadUrls(ID1, params);
                 return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
             }
+            return {
+                area_ha: geostore.areaHa
+            };
+
         }
         return null;
     }
 
     * getUse(useName, useTable, id, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining use with id %s', id);
-        let periods = period.split(',');
-        let params = {
-            useTable: useTable,
+        const periods = period.split(',');
+        const params = {
+            useTable,
             pid: id,
             begin: periods[0],
             end: periods[1]
         };
         let query = USE;
         if (forSubscription) {
-            query = this.getURLForSubscrition(USE);
+            query = getURLForSubscription(USE);
         }
         if (group) {
-            query = this.getQueryForGroup(USE);
+            query = getQueryForGroup(USE);
         }
         const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
-        let data = yield executeThunk(this.client, query, params);
+        const data = yield executeThunk(this.client, query, params);
         if (geostore) {
             if (forSubscription && data.rows) {
                 return data.rows;
             }
-            if(group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null){
+            if (group && data.rows) {
+                if (data.rows.length > 0 && data.rows[0].day === null) {
                     return [];
                 }
                 return data.rows;
             }
             if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
+                const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(USE, params);
+                result.period = getPeriodText(period);
+                result.downloadUrls = getDownloadUrls(USE, params);
                 return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
             }
+            return {
+                area_ha: geostore.areaHa
+            };
+
         }
         return null;
     }
 
     * getWdpa(wdpaid, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
-        let periods = period.split(',');
-        let params = {
-            wdpaid: wdpaid,
+        const periods = period.split(',');
+        const params = {
+            wdpaid,
             begin: periods[0],
             end: periods[1]
         };
         let query = WDPA;
         if (forSubscription) {
-            query = this.getURLForSubscrition(WDPA);
+            query = getURLForSubscription(WDPA);
         }
         if (group) {
-            query = this.getQueryForGroup(WDPA);
+            query = getQueryForGroup(WDPA);
         }
         const geostore = yield GeostoreService.getGeostoreByWdpa(wdpaid);
 
-        let data = yield executeThunk(this.client, query, params);
+        const data = yield executeThunk(this.client, query, params);
         if (geostore) {
             if (forSubscription && data.rows) {
                 return data.rows;
             }
-            if(group && data.rows) {
-                if (data.rows.length > 0 && data.rows[0].day === null){
+            if (group && data.rows) {
+                if (data.rows.length > 0 && data.rows[0].day === null) {
                     return [];
                 }
                 return data.rows;
             }
             if (data.rows && data.rows.length === 1) {
-                let result = data.rows[0];
+                const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
-                result.period = this.getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(WDPA, params);
+                result.period = getPeriodText(period);
+                result.downloadUrls = getDownloadUrls(WDPA, params);
                 return result;
-            } else {
-                return {
-                    area_ha: geostore.areaHa
-                };
             }
+            return {
+                area_ha: geostore.areaHa
+            };
+
         }
         return null;
     }
-
 
 
     * getWorld(hashGeoStore, forSubscription, period = defaultDate()) {
@@ -389,63 +381,64 @@ class CartoDBService {
 
         const geostore = yield GeostoreService.getGeostoreByHash(hashGeoStore);
         if (geostore && geostore.geojson) {
-            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period, geostore.areaHa);
+            return yield this.getWorldWithGeojson(geostore.geojson, forSubscription, period);
         }
         throw new NotFound('Geostore not found');
     }
 
-    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), areaHa = null, group = false) {
+    // eslint-disable-next-line no-unused-vars
+    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Executing query in cartodb with geojson', geojson);
-        let periods = period.split(',');
-        let params = {
+        const periods = period.split(',');
+        const params = {
             geojson: JSON.stringify(geojson.features[0].geometry),
             begin: periods[0],
             end: periods[1]
         };
         let query = WORLD;
         if (forSubscription) {
-            query = this.getURLForSubscrition(WORLD);
+            query = getURLForSubscription(WORLD);
         }
         if (group) {
-            query = this.getQueryForGroup(WORLD);
+            query = getQueryForGroup(WORLD);
         }
-        let dataArea = yield executeThunk(this.client, AREA, params);
-        
+        const dataArea = yield executeThunk(this.client, AREA, params);
+
         logger.debug('Query', query);
-        let data = yield executeThunk(this.client, query, params);
+        const data = yield executeThunk(this.client, query, params);
         logger.debug('ForSubscription', forSubscription);
         if (forSubscription && data.rows) {
 
             return data.rows;
         }
-        if(group && data.rows) {
-            if (data.rows.length > 0 && data.rows[0].day === null){
+        if (group && data.rows) {
+            if (data.rows.length > 0 && data.rows[0].day === null) {
                 return [];
             }
             return data.rows;
         }
-        let result = {
+        const result = {
             area_ha: dataArea.rows[0].area_ha,
-            period: this.getPeriodText(period),
-            downloadUrls: this.getDownloadUrls(WORLD, params)
+            period: getPeriodText(period),
+            downloadUrls: getDownloadUrls(WORLD, params)
         };
-        
+
         if (data.rows && data.rows.length === 1) {
-            result.value = data.rows[0].value || 0;            
-            
-        } 
+            result.value = data.rows[0].value || 0;
+
+        }
         return result;
     }
 
     * latest(limit = 3) {
         logger.debug('Obtaining latest with limit %s', limit);
-        let params = {
-            limit: limit
+        const params = {
+            limit
         };
-        let data = yield executeThunk(this.client, LATEST, params);
+        const data = yield executeThunk(this.client, LATEST, params);
         logger.debug('data', data);
         if (data.rows) {
-            let result = data.rows;
+            const result = data.rows;
             return result;
         }
         return null;
