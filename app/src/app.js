@@ -8,6 +8,10 @@ const loader = require('loader');
 const validate = require('koa-validate');
 const ErrorSerializer = require('serializers/errorSerializer');
 
+
+// const nock = require('nock');
+// nock.recorder.rec();
+
 // instance of koa
 const app = koa();
 
@@ -63,7 +67,7 @@ const server = require('http').Server(app.callback());
 // In production environment, the port must be declared in environment variable
 const port = process.env.PORT || config.get('service.port');
 
-server.listen(port, () => {
+module.exports = server.listen(port, () => {
     const microserviceClient = require('vizz.microservice-client');
 
     microserviceClient.register({

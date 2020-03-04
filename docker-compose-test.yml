@@ -7,4 +7,5 @@ services:
       NODE_ENV: test
       PORT: 3600
       NODE_PATH: app/src
+      CARTODB_USER: cartotest
     command: test
