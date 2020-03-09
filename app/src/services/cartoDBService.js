@@ -121,6 +121,23 @@ const getPeriodText = (period) => {
     }
 };
 
+// eslint-disable-next-line consistent-return
+const getDownloadUrls = (query, params) => {
+    try {
+        const formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
+        const download = {};
+        let queryFinal = Mustache.render(query, params);
+        queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
+        queryFinal = encodeURIComponent(queryFinal);
+        for (let i = 0, { length } = formats; i < length; i++) {
+            download[formats[i]] = `${this.apiUrl}?q=${queryFinal}&format=${formats[i]}`;
+        }
+        return download;
+    } catch (err) {
+        logger.error(err);
+    }
+};
+
 const getURLForSubscription = (query) => {
     const queryFinal = query.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
     return queryFinal;
@@ -140,23 +157,6 @@ class CartoDBService {
             user: config.get('cartoDB.user')
         });
         this.apiUrl = config.get('cartoDB.apiUrl');
-    }
-
-    // eslint-disable-next-line consistent-return
-    getDownloadUrls(query, params) {
-        try {
-            const formats = ['csv', 'geojson', 'kml', 'shp', 'svg'];
-            const download = {};
-            let queryFinal = Mustache.render(query, params);
-            queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
-            queryFinal = encodeURIComponent(queryFinal);
-            for (let i = 0, { length } = formats; i < length; i++) {
-                download[formats[i]] = `${this.apiUrl}?q=${queryFinal}&format=${formats[i]}`;
-            }
-            return download;
-        } catch (err) {
-            logger.error(err);
-        }
     }
 
     * getNational(iso, forSubscription, period = defaultDate(), group = false) {
@@ -190,7 +190,7 @@ class CartoDBService {
                 const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
                 result.period = getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(ISO, params);
+                result.downloadUrls = getDownloadUrls(ISO, params);
                 return result;
             }
             return {
@@ -234,7 +234,7 @@ class CartoDBService {
                 const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
                 result.period = getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(ID1, params);
+                result.downloadUrls = getDownloadUrls(ID1, params);
                 return result;
             }
             return {
@@ -278,7 +278,7 @@ class CartoDBService {
                 const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
                 result.period = getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(ID1, params);
+                result.downloadUrls = getDownloadUrls(ID1, params);
                 return result;
             }
             return {
@@ -321,7 +321,7 @@ class CartoDBService {
                 const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
                 result.period = getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(USE, params);
+                result.downloadUrls = getDownloadUrls(USE, params);
                 return result;
             }
             return {
@@ -364,7 +364,7 @@ class CartoDBService {
                 const result = data.rows[0];
                 result.area_ha = geostore.areaHa;
                 result.period = getPeriodText(period);
-                result.downloadUrls = this.getDownloadUrls(WDPA, params);
+                result.downloadUrls = getDownloadUrls(WDPA, params);
                 return result;
             }
             return {
@@ -420,7 +420,7 @@ class CartoDBService {
         const result = {
             area_ha: dataArea.rows[0].area_ha,
             period: getPeriodText(period),
-            downloadUrls: this.getDownloadUrls(WORLD, params)
+            downloadUrls: getDownloadUrls(WORLD, params)
         };
 
         if (data.rows && data.rows.length === 1) {
