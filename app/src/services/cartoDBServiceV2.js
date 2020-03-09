@@ -153,7 +153,7 @@ const getDownloadUrls = (query, params) => {
         queryFinal = queryFinal.replace('SELECT COUNT(pt.*) AS value', 'SELECT pt.*');
         queryFinal = encodeURIComponent(queryFinal);
         for (let i = 0, { length } = formats; i < length; i++) {
-            download[formats[i]] = `${this.apiUrl}?q=${queryFinal}&format=${formats[i]}`;
+            download[formats[i]] = `${config.get('cartoDB.apiUrl')}?q=${queryFinal}&format=${formats[i]}`;
         }
         return download;
     } catch (err) {
@@ -178,7 +178,6 @@ class CartoDBServiceV2 {
         this.client = new CartoDB.SQL({
             user: config.get('cartoDB.user')
         });
-        this.apiUrl = config.get('cartoDB.apiUrl');
     }
 
     * getAdm0(iso, forSubscription, period = defaultDate(), group = false) {

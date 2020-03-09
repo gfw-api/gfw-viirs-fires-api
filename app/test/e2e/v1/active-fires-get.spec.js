@@ -34,7 +34,7 @@ describe('V1 - Get active fires tests', () => {
             .get('/api/v2/sql')
             .query({
                 // eslint-disable-next-line max-len
-                q: 'with p as (SELECT  the_geom\n           FROM gadm2_countries_simple\n           WHERE iso = UPPER(\'foo\'))\n            SELECT COUNT(pt.*) AS value\n            FROM p\n            inner join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)\n            and\n             (confidence=\'normal\' OR confidence = \'nominal\') AND acq_date >= \'2020-3-3\'::date\n             AND acq_date <= \'2020-3-4\'::date'
+                q: 'with p as (SELECT  the_geom\n           FROM gadm2_countries_simple\n           WHERE iso = UPPER(\'foo\'))\n            SELECT COUNT(pt.*) AS value\n            FROM p\n            inner join vnp14imgtdl_nrt_global_7d pt on ST_Intersects(p.the_geom, pt.the_geom)\n            and\n             (confidence=\'normal\' OR confidence = \'nominal\') AND acq_date >= \'2020-3-8\'::date\n             AND acq_date <= \'2020-3-9\'::date'
             })
             .reply(200, {
                 rows: [{ value: 0 }],
