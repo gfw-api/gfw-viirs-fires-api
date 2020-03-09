@@ -73,6 +73,28 @@ describe('V1 - Get active fires tests', () => {
                 total_rows: 1
             });
 
+        const encodedDownloadQueryParams = '/api/v2/sql?q=with%20p%20as%20(SELECT%20iso%2C%20area_ha%2C%20ST_makevalid(ST_Simplify(the_geom%2C%200.005))%20AS%20the_geom%0A%20%20%20%20%20%20%20%20%20%20%20FROM%20gadm36_countries%0A%20%20%20%20%20%20%20%20%20%20%20WHERE%20iso%20%3D%20UPPER(%27CMR%27))%0A%20%20%20%20%20%20%20%20%20%20%20%20SELECT%20pt.*%2C%20area_ha%0A%20%20%20%20%20%20%20%20%20%20%20%20FROM%20p%0A%20%20%20%20%20%20%20%20%20%20%20%20inner%20join%20vnp14imgtdl_nrt_global_7d%20pt%20on%20ST_Intersects(p.the_geom%2C%20pt.the_geom)%0A%20%20%20%20%20%20%20%20%20%20%20%20and%0A%20%20%20%20%20%20%20%20%20%20%20%20%20(confidence%3D%27normal%27%20OR%20confidence%20%3D%20%27nominal%27)%20AND%20acq_date%20%3E%3D%20%272020-03-04%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20AND%20acq_date%20%3C%3D%20%272020-03-05%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20GROUP%20BY%20area_ha%2C%20iso%2C%20pt.cartodb_id&format=';
+        // mock download urls
+        nock('https://wri-01.cartodb.com', { encodedQueryParams: true })
+            .get(`${encodedDownloadQueryParams}csv`)
+            .reply(200);
+
+        nock('https://wri-01.cartodb.com', { encodedQueryParams: true })
+            .get(`${encodedDownloadQueryParams}json`)
+            .reply(200);
+
+        nock('https://wri-01.cartodb.com', { encodedQueryParams: true })
+            .get(`${encodedDownloadQueryParams}kml`)
+            .reply(200);
+
+        nock('https://wri-01.cartodb.com', { encodedQueryParams: true })
+            .get(`${encodedDownloadQueryParams}shp`)
+            .reply(200);
+
+        nock('https://wri-01.cartodb.com', { encodedQueryParams: true })
+            .get(`${encodedDownloadQueryParams}svg`)
+            .reply(200);
+
         const response = await requester.get(`/api/v2/viirs-active-fires/admin/CMR?period=2020-03-04%2C2020-03-05`);
 
         const { downloadUrls } = response.body.data.attributes;
