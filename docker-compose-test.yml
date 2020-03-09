@@ -8,4 +8,8 @@ services:
       PORT: 3600
       NODE_PATH: app/src
       CARTODB_USER: cartotest
+      CT_URL: http://mymachine:9000
+      LOCAL_URL: http://127.0.0.1:3600
+      CT_REGISTER_MODE: auto
+      API_VERSION: v1
     command: test
