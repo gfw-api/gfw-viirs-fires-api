@@ -34,6 +34,7 @@
   },
   "homepage": "https://github.com/gfw-api/gfw-viirs-fires-api#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "bunyan": "1.7.1",
     "cartodb": "0.4.0",
     "co": "4.6.0",
@@ -55,8 +56,8 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "chai-http": "^4.3.0",
     "chai-datetime": "^1.5.0",
+    "chai-http": "^4.3.0",
     "co-mocha": "^1.2.2",
     "eslint": "^6.0.1",
     "eslint-config-airbnb": "^18.0.1",
