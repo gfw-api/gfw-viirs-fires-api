@@ -1,8 +1,11 @@
 {
-    "logger": {
-        "name": "gfw-viirs-fires-api-TEST",
-        "level": "debug",
-        "toFile": false,
-        "dirLogFile": null
-    }
+  "logger": {
+    "name": "gfw-viirs-fires-api-TEST",
+    "level": "debug",
+    "toFile": false,
+    "dirLogFile": null
+  },
+  "cartoDB": {
+    "user": "cartotest"
+  }
 }

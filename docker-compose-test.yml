@@ -1,8 +1,15 @@
-test:
-  extends:
-    file: base.yml
-    service: base
-  container_name: gfw-fires-api-test
-  environment:
-    NODE_ENV: test
-  command: test
+version: "3"
+services:
+  test:
+    build: .
+    container_name: gfw-fires-api-test
+    environment:
+      NODE_ENV: test
+      PORT: 3600
+      NODE_PATH: app/src
+      CARTODB_USER: cartotest
+      CT_URL: http://mymachine:9000
+      LOCAL_URL: http://127.0.0.1:3600
+      CT_REGISTER_MODE: auto
+      API_VERSION: v1
+    command: test

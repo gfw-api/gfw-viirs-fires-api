@@ -1,11 +1,11 @@
-'use strict';
+class NotFound extends Error {
 
-class NotFound extends Error{
-
-    constructor(message){
+    constructor(message) {
         super(message);
         this.name = 'NotFound';
         this.message = message;
     }
+
 }
+
 module.exports = NotFound;

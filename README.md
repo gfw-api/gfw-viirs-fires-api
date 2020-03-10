@@ -1,7 +1,9 @@
 # GFW Fires API
 
+[![Build Status](https://travis-ci.org/gfw-api/gfw-viirs-fires-api.svg?branch=develop)](https://travis-ci.org/gfw-api/gfw-viirs-fires-api)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/5978e5b572f6194cbe42/test_coverage)](https://codeclimate.com/github/gfw-api/gfw-viirs-fires-api/test_coverage)
 
-This repository is the microservice that it implement the viirs fires funcionality and exposed the /viirs-active-fires endpoint in the api-gateway
+This repository is the microservice that it implement the viirs fires functionality and exposed the /viirs-active-fires endpoint in the api-gateway
 
 [View the documentation for this
 API](http://gfw-api.github.io/swagger-ui/?url=https://raw.githubusercontent.com/gfw-api/gfw-viirs-fires-api/master/app/microservice/swagger.yml#/VIIRS-FIRES)
@@ -49,9 +51,9 @@ Is necessary the pem file of Google Earth Engine authentication in the root of t
 
 ## register.json
 This file contain the configuration about the endpoints that public the microservice. This json will send to the apigateway. it can contain variables:
-* #(service.id) => Id of the service setted in the config file by environment
-* #(service.name) => Name of the service setted in the config file by environment
-* #(service.uri) => Base uri of the service setted in the config file by environment
+* #(service.id) => Id of the service set in the config file by environment
+* #(service.name) => Name of the service set in the config file by environment
+* #(service.uri) => Base uri of the service set in the config file by environment
 
 Example:
 ````

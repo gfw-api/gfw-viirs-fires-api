@@ -1,34 +1,33 @@
-'use strict';
+const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
-var logger = require('logger');
-var JSONAPISerializer = require('jsonapi-serializer').Serializer;
-var viirsFiresSerializer = new JSONAPISerializer('viirs-fires', {
+const viirsFiresSerializer = new JSONAPISerializer('viirs-fires', {
     attributes: ['value', 'period', 'downloadUrls', 'area_ha', 'latitude', 'longitude', 'acq_date', 'acq_time', 'day'],
-    typeForAttribute: function (attribute, record) {
+    typeForAttribute(attribute) {
         return attribute;
     },
-    downloadUrls:{
+    downloadUrls: {
         attributes: ['csv', 'geojson', 'kml', 'shp', 'svg']
     },
     keyForAttribute: 'camelCase'
 });
 
-var viirsFiresLatestSerializer = new JSONAPISerializer('viirs-latest', {
+const viirsFiresLatestSerializer = new JSONAPISerializer('viirs-latest', {
     attributes: ['date'],
-    typeForAttribute: function (attribute, record) {
+    typeForAttribute(attribute) {
         return attribute;
     }
 });
 
 class ViirsFiresSerializer {
 
-  static serialize(data) {
-    return viirsFiresSerializer.serialize(data);
-  }
+    static serialize(data) {
+        return viirsFiresSerializer.serialize(data);
+    }
 
-  static serializeLatest(data) {
-    return viirsFiresLatestSerializer.serialize(data);
-  }
+    static serializeLatest(data) {
+        return viirsFiresLatestSerializer.serialize(data);
+    }
+
 }
 
 module.exports = ViirsFiresSerializer;

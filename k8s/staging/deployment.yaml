@@ -3,8 +3,8 @@ kind: Deployment
 metadata:
   namespace: gfw
   labels:
-    name: {name}
-  name: {name}
+    name: viirs-fires
+  name: viirs-fires
 spec:
   revisionHistoryLimit: 0
   template:
@@ -12,11 +12,11 @@ spec:
       annotations:
         chaos.alpha.kubernetes.io/enabled: "true"
       labels:
-        name: {name}
+        name: viirs-fires
     spec:
       containers:
-      - name: {name}
-        image: vizzuality/{name}
+      - name: viirs-fires
+        image: vizzuality/viirs-fires
         imagePullPolicy: Always
         resources:
           requests:
@@ -32,7 +32,7 @@ spec:
           - name: NODE_PATH
             value: app/src
           - name: LOCAL_URL
-            value: http://{name}.gfw.svc.cluster.local:3600
+            value: http://viirs-fires.gfw.svc.cluster.local:3600
           - name: CT_URL
             valueFrom:
                 secretKeyRef:
