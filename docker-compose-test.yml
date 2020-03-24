@@ -2,6 +2,8 @@ version: "3"
 services:
   test:
     build: .
+    ports:
+      - "3600"
     container_name: gfw-fires-api-test
     environment:
       NODE_ENV: test
