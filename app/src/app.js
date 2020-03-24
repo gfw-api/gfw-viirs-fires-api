@@ -6,6 +6,8 @@ const bodyParser = require('koa-bodyparser');
 const koaLogger = require('koa-logger');
 const loader = require('loader');
 const validate = require('koa-validate');
+const convert = require('koa-convert');
+const koaSimpleHealthCheck = require('koa-simple-healthcheck');
 const ErrorSerializer = require('serializers/errorSerializer');
 
 
@@ -25,13 +27,25 @@ app.use(bodyParser({
 }));
 
 // catch errors and send in jsonapi standard. Always return vnd.api+json
-app.use(function* errorHandler(next) {
+app.use(function* handleErrors(next) {
     try {
         yield next;
-    } catch (err) {
-        this.status = err.status || 500;
-        logger.error(err);
-        this.body = ErrorSerializer.serializeError(this.status, err.message);
+    } catch (inErr) {
+        let error = inErr;
+        try {
+            error = JSON.parse(inErr);
+        } catch (e) {
+            logger.debug('Could not parse error message - is it JSON?: ', inErr);
+            error = inErr;
+        }
+        this.status = error.status || this.status || 500;
+        if (this.status >= 500) {
+            logger.error(error);
+        } else {
+            logger.info(error);
+        }
+
+        this.body = ErrorSerializer.serializeError(this.status, error.message);
         if (process.env.NODE_ENV === 'prod' && this.status === 500) {
             this.body = 'Unexpected error';
         }
@@ -42,6 +56,8 @@ app.use(function* errorHandler(next) {
 const cache = require('lru-cache')({
     maxAge: 30000 // global max age
 });
+
+app.use(convert.back(koaSimpleHealthCheck()));
 
 app.use(require('koa-cash')({
     get(key) {

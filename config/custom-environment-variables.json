@@ -1,5 +1,8 @@
 {
-    "cartoDB":{
-        "user": "CARTODB_USER"
-    }
+  "cartoDB": {
+    "user": "CARTODB_USER"
+  },
+  "logger": {
+    "level": "LOGGER_LEVEL"
+  }
 }

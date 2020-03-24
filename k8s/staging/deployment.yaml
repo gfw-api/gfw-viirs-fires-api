@@ -20,8 +20,11 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: "0Mi"
-            cpu: "0m"
+            cpu: "0.5"
+            memory: "256M"
+          limits:
+            cpu: "1"
+            memory: "512M"
         args:
           - start
         env:
@@ -60,5 +63,22 @@ spec:
                   key: CARTODB_USER
         ports:
           - containerPort: 3600
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /healthcheck
+            port: 3600
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /healthcheck
+            port: 3600
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
 
       restartPolicy: Always
