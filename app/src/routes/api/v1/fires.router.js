@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const logger = require('logger');
 const CartoDBService = require('services/cartoDBService');
+const DatasetService = require('services/datasetService');
 const NotFound = require('errors/notFound');
 const ViirsFiresSerializer = require('serializers/viirsFiresSerializer');
 
@@ -12,8 +13,8 @@ const router = new Router({
 class ViirsFiresRouter {
 
     static* getNational() {
-        logger.info('Obtaining national data');
-        const data = yield CartoDBService.getNational(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        logger.info('Obtaining national data for iso %s and period %s', this.params.iso, this.query.period);
+        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true');
         logger.debug('obtained ', data);
         this.body = ViirsFiresSerializer.serialize(data);
     }

@@ -7,5 +7,14 @@
   },
   "service": {
     "port": null
+  },
+  "datasets": {
+    "uri": "https://staging-api.globalforestwatch.org",
+    "viirs_gadm_daily_id": "17388a14-b28e-4b76-bad7-2d174b9f143d",
+    "viirs_gadm_all_id": "003539d8-b713-4df2-9e31-5eda80353191",
+    "gadm_summary_id": "848a6497-898b-44a7-b2dd-afe00426ed5f",
+    "viirs_wdpa_daily_id": "93a566c7-4788-4745-afb5-940767627279",
+    "viirs_wdpa_all_id": "05d5c9ff-6134-4ec0-b7e1-6a5b4f50edab",
+    "wdpa_summary_id": "848a6497-898b-44a7-b2dd-afe00426ed5f"
   }
 }
