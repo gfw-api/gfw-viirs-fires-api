@@ -49,6 +49,23 @@ class GeostoreService {
         return yield GeostoreService.getGeostore(`wdpa/${wdpaid}`);
     }
 
+    static* createGeostore(geojson) {
+        logger.debug('Create geostore from geojson: %s', geojson);
+        const result = yield require('vizz.microservice-client').requestToMicroservice({
+            uri: `/geostore`,
+            method: 'POST',
+            json: true,
+            data: {
+                "geojson": geojson
+            }
+        });
+        if (result.statusCode !== 200) {
+            logger.error('Error creating geostore:');
+            logger.error(result);
+            return null;
+        }
+        return yield deserializer(result.body.data.id);
+    }
 }
 
 module.exports = GeostoreService;
