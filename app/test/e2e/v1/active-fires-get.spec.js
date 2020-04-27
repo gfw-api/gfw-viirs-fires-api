@@ -3,8 +3,12 @@ const nock = require('nock');
 const chai = require('chai');
 const config = require('config');
 const axios = require('axios');
+const logger = require('logger');
 const { getTestServer } = require('../utils/test-server');
 const { CORRECT_CAMERRON_SQL_RESULT } = require('../utils/cameroon-mock');
+const {
+    ALERT_COUNT_RESPONSE, AREA_RESPONSE, LIBERIA_SUBSCRIPTION_POINTS, LIBERIA_GROUPED, GEOSTORE_RESPONSE, LATEST_RESPONSE
+} = require('../utils/query-mocks');
 
 chai.use(require('chai-datetime'));
 
@@ -25,110 +29,231 @@ describe('V1 - Get active fires tests', () => {
         requester = await getTestServer();
     });
 
-    // TODO: should probably return a 404
-    it('Get admin level data for an area that doesn\'t exist returns a 200 with no data', async () => {
-        nock(process.env.CT_URL)
-            .get('/v1/geostore/admin/foo')
-            .reply(404, { errors: [{ status: 404, detail: 'Country not found' }] });
-
-
-        nock(`https://${config.get('cartoDB.user')}.cartodb.com`, { encodedQueryParams: true })
-            .get(`/api/v2/sql?q=with%20p%20as%20%28SELECT%20%20the_geom%0A%20%20%20%20%20%20%20%20%20%20%20FROM%20gadm2_countries_simple%0A%20%20%20%20%20%20%20%20%20%20%20WHERE%20iso%20%3D%20UPPER%28%27foo%27%29%29%0A%20%20%20%20%20%20%20%20%20%20%20%20SELECT%20COUNT%28pt.%2A%29%20AS%20value%0A%20%20%20%20%20%20%20%20%20%20%20%20FROM%20p%0A%20%20%20%20%20%20%20%20%20%20%20%20inner%20join%20vnp14imgtdl_nrt_global_7d%20pt%20on%20ST_Intersects%28p.the_geom%2C%20pt.the_geom%29%0A%20%20%20%20%20%20%20%20%20%20%20%20and%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%28confidence%3D%27normal%27%20OR%20confidence%20%3D%20%27nominal%27%29%20AND%20acq_date%20%3E%3D%20%272020-03-04%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20AND%20acq_date%20%3C%3D%20%272020-03-05%27%3A%3Adate`)
-            .reply(200, {
-                rows: [{ value: 0 }],
-                time: 0.002,
-                fields: { value: { type: 'number', pgtype: 'int8' } },
-                total_rows: 1
-            });
-
-        const response = await requester
-            .get(`/api/v1/viirs-active-fires/admin/foo?period=2020-03-04%2C2020-03-05`);
-
-        response.status.should.equal(200);
-        // eslint-disable-next-line no-unused-expressions
-        response.body.should.have.property('data').and.be.null;
-
-    });
-
     it('Get correct downloadUrls (200) links when when querying for admin level data', async () => {
-        const carto = `https://${config.get('cartoDB.user')}.cartodb.com`;
-        const cartoFromDownloadUrls = 'https://wri-01.cartodb.com';
+        const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27`;
+        const areaQuery = `SELECT%20SUM(area__ha)%20AS%20value%20FROM%20table%20WHERE%20iso%20%3D%20%27LBR%27`;
 
-        nock(carto, { encodedQueryParams: true })
-            .get(`/api/v2/sql?q=with%20p%20as%20%28SELECT%20iso%2C%20area_ha%2C%20ST_makevalid%28ST_Simplify%28the_geom%2C%200.005%29%29%20AS%20the_geom%0A%20%20%20%20%20%20%20%20%20%20%20FROM%20gadm36_countries%0A%20%20%20%20%20%20%20%20%20%20%20WHERE%20iso%20%3D%20UPPER%28%27CMR%27%29%29%0A%20%20%20%20%20%20%20%20%20%20%20%20SELECT%20COUNT%28pt.%2A%29%20AS%20value%2C%20area_ha%0A%20%20%20%20%20%20%20%20%20%20%20%20FROM%20p%0A%20%20%20%20%20%20%20%20%20%20%20%20inner%20join%20vnp14imgtdl_nrt_global_7d%20pt%20on%20ST_Intersects%28p.the_geom%2C%20pt.the_geom%29%0A%20%20%20%20%20%20%20%20%20%20%20%20and%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%28confidence%3D%27normal%27%20OR%20confidence%20%3D%20%27nominal%27%29%20AND%20acq_date%20%3E%3D%20%272020-03-04%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20AND%20acq_date%20%3C%3D%20%272020-03-05%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20GROUP%20BY%20area_ha%2C%20iso%2C%20pt.cartodb_id`)
-            .reply(200, CORRECT_CAMERRON_SQL_RESULT);
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_gadm_daily_id')}`)
+            .query({ sql: alertQuery })
+            .reply(200, ALERT_COUNT_RESPONSE);
 
-        nock(carto, { encodedQueryParams: true })
-            .get('/api/v2/sql?q=select%20area_ha%20FROM%20gadm36_countries%20WHERE%20gid_0%20%3D%20%27CMR%27')
-            .reply(200, {
-                rows: [
-                    {
-                        area_ha: 46604003.7680844
-                    }
-                ],
-                time: 0.001,
-                fields: {
-                    area_ha: {
-                        type: 'number',
-                        pgtype: 'float8'
-                    }
-                },
-                total_rows: 1
-            });
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.gadm_summary_id')}`)
+            .query({ sql: areaQuery })
+            .reply(200, AREA_RESPONSE);
 
-        const encodedDownloadQueryParams = '/api/v2/sql?q=with%20p%20as%20(SELECT%20iso%2C%20area_ha%2C%20ST_makevalid(ST_Simplify(the_geom%2C%200.005))%20AS%20the_geom%0A%20%20%20%20%20%20%20%20%20%20%20FROM%20gadm36_countries%0A%20%20%20%20%20%20%20%20%20%20%20WHERE%20iso%20%3D%20UPPER(%27CMR%27))%0A%20%20%20%20%20%20%20%20%20%20%20%20SELECT%20pt.*%2C%20area_ha%0A%20%20%20%20%20%20%20%20%20%20%20%20FROM%20p%0A%20%20%20%20%20%20%20%20%20%20%20%20inner%20join%20vnp14imgtdl_nrt_global_7d%20pt%20on%20ST_Intersects(p.the_geom%2C%20pt.the_geom)%0A%20%20%20%20%20%20%20%20%20%20%20%20and%0A%20%20%20%20%20%20%20%20%20%20%20%20%20(confidence%3D%27normal%27%20OR%20confidence%20%3D%20%27nominal%27)%20AND%20acq_date%20%3E%3D%20%272020-03-04%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20AND%20acq_date%20%3C%3D%20%272020-03-05%27%3A%3Adate%0A%20%20%20%20%20%20%20%20%20%20%20%20%20GROUP%20BY%20area_ha%2C%20iso%2C%20pt.cartodb_id&format=';
         // mock download urls
-        nock(cartoFromDownloadUrls, { encodedQueryParams: true })
-            .get(`${encodedDownloadQueryParams}csv`)
+        const downloadSql = `SELECT%20*%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20'h'%20OR%20confidence__cat%20%3D%20'n')%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20'2020-04-22'%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20'2020-04-23'%20AND%20iso%20%3D%20'LBR'`;
+        nock(config.get('datasets.uri'), { encodedQueryParams: true })
+            .get(`/download/${config.get('datasets.viirs_gadm_all_id')}`)
+            .query({
+                sql: downloadSql,
+                format: 'csv'
+            })
             .reply(200);
 
-        nock(cartoFromDownloadUrls, { encodedQueryParams: true })
-            .get(`${encodedDownloadQueryParams}json`)
+        nock(config.get('datasets.uri'), { encodedQueryParams: true })
+            .get(`/download/${config.get('datasets.viirs_gadm_all_id')}`)
+            .query({
+                sql: downloadSql,
+                format: 'geojson'
+            })
             .reply(200);
 
-        nock(cartoFromDownloadUrls, { encodedQueryParams: true })
-            .get(`${encodedDownloadQueryParams}kml`)
-            .reply(200);
+        const response = await requester.get(`/api/v1/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23`);
 
-        nock(cartoFromDownloadUrls, { encodedQueryParams: true })
-            .get(`${encodedDownloadQueryParams}shp`)
-            .reply(200);
-
-        nock(cartoFromDownloadUrls, { encodedQueryParams: true })
-            .get(`${encodedDownloadQueryParams}svg`)
-            .reply(200);
-
-        const response = await requester.get(`/api/v2/viirs-active-fires/admin/CMR?period=2020-03-04%2C2020-03-05`);
-
+        logger.debug('Response: %s', JSON.stringify(response.body));
         const { downloadUrls } = response.body.data.attributes;
 
         response.status.should.equal(200);
         response.body.should.have.property('data').and.be.an('object');
         response.body.data.attributes.should.have.property('downloadUrls').and.be.an('object');
+        response.body.data.attributes.value.should.equal(2415);
+        response.body.data.attributes.areaHa.should.equal(11.137);
         downloadUrls.should.have.property('csv');
-        downloadUrls.should.have.property('json');
-        downloadUrls.should.have.property('kml');
-        downloadUrls.should.have.property('shp');
-        downloadUrls.should.have.property('svg');
+        downloadUrls.should.have.property('geojson');
 
         try {
             const csvDownloadUrl = await axios.get(downloadUrls.csv);
             csvDownloadUrl.status.should.equal(200);
 
-            const jsonDownloadUrl = await axios.get(downloadUrls.json);
+            const jsonDownloadUrl = await axios.get(downloadUrls.geojson);
             jsonDownloadUrl.status.should.equal(200);
 
-            const kmlDownloadUrl = await axios.get(downloadUrls.kml);
-            kmlDownloadUrl.status.should.equal(200);
-
-            const shpDownloadUrl = await axios.get(downloadUrls.shp);
-            shpDownloadUrl.status.should.equal(200);
-
-            const svgDownloadUrl = await axios.get(downloadUrls.svg);
-            svgDownloadUrl.status.should.equal(200);
         } catch (error) {
-            throw new Error('Something awful happend', error);
+            throw new Error('Something awful happened', error);
         }
+    });
+
+    // test adm forSubscription
+    it('Get subscription response for admin level data', async () => {
+        // eslint-disable-next-line max-len
+        const lbrAlertQuery = `SELECT%20latitude%2C%20longitude%2C%20alert__date%20as%20acq_date%2C%20alert__time_utc%20as%20acq_time%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27`;
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_gadm_all_id')}`)
+            .query({ sql: lbrAlertQuery })
+            .reply(200, LIBERIA_SUBSCRIPTION_POINTS);
+
+        const response = await requester.get(`/api/v1/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23&forSubscription=true`);
+
+        logger.debug('Response: %s', JSON.stringify(response.body));
+        response.status.should.equal(200);
+        response.body.should.have.property('data').and.be.an('array');
+        response.body.data.length.should.equal(LIBERIA_SUBSCRIPTION_POINTS.data.length);
+
+        const dataItem = response.body.data[0];
+        dataItem.should.have.property('attributes').and.be.an('object');
+        dataItem.attributes.should.have.property('latitude');
+    });
+
+    // test adm group
+    it('Get group response for admin level data', async () => {
+        // eslint-disable-next-line max-len
+        const lbrAlertQuery = `SELECT%20alert__date%20as%20day%2C%20SUM(alert__count)%20as%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27%20GROUP%20BY%20alert__date`;
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_gadm_daily_id')}`)
+            .query({ sql: lbrAlertQuery })
+            .reply(200, LIBERIA_GROUPED);
+
+        const response = await requester.get(`/api/v1/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23&group=true`);
+
+        logger.debug('Response: %s', JSON.stringify(response.body));
+        response.status.should.equal(200);
+        response.body.should.have.property('data').and.be.an('array');
+        response.body.data.length.should.equal(LIBERIA_GROUPED.data.length);
+
+        const dataItem = response.body.data[0];
+        dataItem.should.have.property('attributes').and.be.an('object');
+        dataItem.attributes.should.have.property('day');
+    });
+
+    // test wdpa
+    it('Get response for wdpa data', async () => {
+        // eslint-disable-next-line max-len
+        const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20wdpa_protected_area__id%20%3D%20%2710%27`;
+        const areaQuery = `SELECT%20SUM(area__ha)%20AS%20value%20FROM%20table%20WHERE%20wdpa_protected_area__id%20%3D%20%2710%27`;
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_wdpa_daily_id')}`)
+            .query({ sql: alertQuery })
+            .reply(200, ALERT_COUNT_RESPONSE);
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.wdpa_summary_id')}`)
+            .query({ sql: areaQuery })
+            .reply(200, AREA_RESPONSE);
+
+        const response = await requester.get(`/api/v1/viirs-active-fires/wdpa/10?period=2020-04-22%2C2020-04-23`);
+
+        logger.debug('Response: %s', JSON.stringify(response.body));
+        response.status.should.equal(200);
+        response.body.should.have.property('data').and.be.an('object');
+        response.body.data.attributes.value.should.equal(2415);
+        response.body.data.attributes.areaHa.should.equal(11.137);
+    });
+
+    // test world with geostore
+    it('Get response for geostore data', async () => {
+        // eslint-disable-next-line max-len
+        const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27`;
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_gadm_all_id')}`)
+            .query({
+                sql: alertQuery,
+                geostore: '351cfa10a38f86eeacad8a86ab7ce845'
+            })
+            .reply(200, ALERT_COUNT_RESPONSE);
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/geostore/351cfa10a38f86eeacad8a86ab7ce845`)
+            .reply(200, GEOSTORE_RESPONSE);
+
+        const response = await requester.get(`/api/v1/viirs-active-fires?geostore=351cfa10a38f86eeacad8a86ab7ce845&period=2020-04-22%2C2020-04-23`);
+
+        logger.debug('Response: %s', JSON.stringify(response.body));
+        response.status.should.equal(200);
+        response.body.should.have.property('data').and.be.an('object');
+        response.body.data.attributes.value.should.equal(2415);
+        response.body.data.attributes.areaHa.should.equal(394733.6044288499);
+    });
+
+    // test world with geojson
+    it('Get response for POST geojson', async () => {
+        // eslint-disable-next-line max-len
+        const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27`;
+
+        nock(process.env.CT_URL)
+            .post(`/v1/geostore`)
+            .reply(200, GEOSTORE_RESPONSE);
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_gadm_all_id')}`)
+            .query({
+                sql: alertQuery,
+                geostore: '351cfa10a38f86eeacad8a86ab7ce845'
+            })
+            .reply(200, ALERT_COUNT_RESPONSE);
+
+        nock(process.env.CT_URL)
+            .get(`/v1/geostore/351cfa10a38f86eeacad8a86ab7ce845`)
+            .reply(200, GEOSTORE_RESPONSE);
+
+        const response = await requester.post(`/api/v1/viirs-active-fires?period=2020-04-22%2C2020-04-23`).send({
+            geojson: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [
+                            112.371093750044,
+                            -1.71406936894705
+                        ],
+                        [
+                            112.54687500004,
+                            -2.35087223984772
+                        ],
+                        [
+                            113.475219726588,
+                            -2.08739834101191
+                        ],
+                        [
+                            112.371093750044,
+                            -1.71406936894705
+                        ]
+                    ]
+                ]
+            }
+        });
+
+        logger.debug('Response: %s', JSON.stringify(response.body));
+        response.status.should.equal(200);
+        response.body.should.have.property('data').and.be.an('object');
+        response.body.data.attributes.value.should.equal(2415);
+        response.body.data.attributes.areaHa.should.equal(394733.6044288499);
+    });
+
+    // test latest
+    it('Get response from latest', async () => {
+        // eslint-disable-next-line max-len
+        const latestQuery = `SELECT%20alert__date%20as%20date%0A%20%20%20%20%20%20%20%20FROM%20table%20ORDER%20BY%20alert__date%20DESC%0A%20%20%20%20%20%20%20%20LIMIT%201`;
+
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/query/${config.get('datasets.viirs_gadm_all_id')}`)
+            .query({
+                sql: latestQuery
+            })
+            .reply(200, LATEST_RESPONSE);
+
+
+        const response = await requester.get(`/api/v1/viirs-active-fires/latest`);
+
+        logger.debug('Response: %s', JSON.stringify(response.body));
+        response.status.should.equal(200);
+        response.body.should.have.property('data').and.be.an('object');
+        response.body.data.attributes.date.should.equal('2020-04-26');
     });
 
     afterEach(async () => {
