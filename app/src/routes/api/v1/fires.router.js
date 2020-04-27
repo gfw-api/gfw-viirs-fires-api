@@ -1,6 +1,5 @@
 const Router = require('koa-router');
 const logger = require('logger');
-const CartoDBService = require('services/cartoDBService');
 const DatasetService = require('services/datasetService');
 const NotFound = require('errors/notFound');
 const ViirsFiresSerializer = require('serializers/viirsFiresSerializer');
@@ -21,13 +20,13 @@ class ViirsFiresRouter {
 
     static* getSubnational() {
         logger.info('Obtaining subnational data');
-        const data = yield CartoDBService.getSubnational(this.params.iso, this.params.id1, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true', this.params.id1);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
     static* getRegion() {
         logger.info('Obtaining region data');
-        const data = yield CartoDBService.getRegion(this.params.iso, this.params.id1, this.params.id2, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true', this.params.id1, this.params.id2);
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
@@ -55,14 +54,14 @@ class ViirsFiresRouter {
         if (!useTable) {
             this.throw(404, 'Name not found');
         }
-        const data = yield CartoDBService.getUse(this.params.name, useTable, this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getUse(this.params.name, useTable, this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
         this.body = ViirsFiresSerializer.serialize(data);
 
     }
 
     static* wdpa() {
         logger.info('Obtaining wpda data with id %s', this.params.id);
-        const data = yield CartoDBService.getWdpa(this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getWdpa(this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
         this.body = ViirsFiresSerializer.serialize(data);
     }
 
@@ -70,7 +69,7 @@ class ViirsFiresRouter {
         logger.info('Obtaining world data');
         this.assert(this.query.geostore, 400, 'GeoJSON param required');
         try {
-            const data = yield CartoDBService.getWorld(this.query.geostore, this.query.forSubscription, this.query.period, this.query.group === 'true');
+            const data = yield DatasetService.getWorld(this.query.geostore, this.query.forSubscription, this.query.period, this.query.group === 'true');
 
             this.body = ViirsFiresSerializer.serialize(data);
         } catch (err) {
@@ -105,7 +104,7 @@ class ViirsFiresRouter {
         logger.info('Obtaining world data with geostore');
         this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
         try {
-            const data = yield CartoDBService.getWorldWithGeojson(
+            const data = yield DatasetService.getWorldWithGeojson(
                 ViirsFiresRouter.checkGeojson(this.request.body.geojson),
                 this.query.forSubscription,
                 this.query.period,
@@ -125,7 +124,7 @@ class ViirsFiresRouter {
 
     static* latest() {
         logger.info('Obtaining latest data');
-        const data = yield CartoDBService.latest(this.query.limit);
+        const data = yield DatasetService.latest();
         this.body = ViirsFiresSerializer.serializeLatest(data);
     }
 
