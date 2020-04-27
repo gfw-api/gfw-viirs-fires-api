@@ -56,7 +56,7 @@ class GeostoreService {
             method: 'POST',
             json: true,
             data: {
-                "geojson": geojson
+                geojson
             }
         });
         if (result.statusCode !== 200) {
@@ -64,7 +64,7 @@ class GeostoreService {
             logger.error(result);
             return null;
         }
-        return yield deserializer(result.body.data.id);
+        return yield deserializer(result.body);
     }
 }
 
