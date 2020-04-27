@@ -1,18 +1,43 @@
-const LIBERIA_ALERT_COUNT = {
+const LATEST_RESPONSE = {
+    "data": [
+        {
+            "alert__date": "2020-04-26",
+            "_id": "AXG5a3KA7ABCYSRqi3Or",
+            "date": "2020-04-26"
+        }
+    ]
+};
+
+const ALERT_COUNT_RESPONSE = {
     data: [
         {
             value: 2415
         }
     ]
-}
+};
 
-const LIBERIA_AREA = {
+const AREA_RESPONSE = {
     data: [
         {
             value: 11.137
         }
     ]
-}
+};
+
+const LIBERIA_GROUPED = {
+    data: [
+        {
+            alert__date: '2020-04-22',
+            value: 50,
+            day: '2020-04-22'
+        },
+        {
+            alert__date: '2020-04-23',
+            value: 100,
+            day: '2020-04-23'
+        }
+    ]
+};
 
 const LIBERIA_SUBSCRIPTION_POINTS = {
     "data": [
@@ -125,10 +150,67 @@ const LIBERIA_SUBSCRIPTION_POINTS = {
             "acq_time": 1336
         }
     ]
-}
+};
+
+const GEOSTORE_RESPONSE = {
+    "data": {
+        "type": "geoStore",
+        "id": "351cfa10a38f86eeacad8a86ab7ce845",
+        "attributes": {
+            "geojson": {
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [
+                                [
+                                    [
+                                        112.371093750044,
+                                        -1.71406936894705
+                                    ],
+                                    [
+                                        112.54687500004,
+                                        -2.35087223984772
+                                    ],
+                                    [
+                                        113.475219726588,
+                                        -2.08739834101191
+                                    ],
+                                    [
+                                        112.371093750044,
+                                        -1.71406936894705
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "crs": {},
+                "type": "FeatureCollection"
+            },
+            "hash": "351cfa10a38f86eeacad8a86ab7ce845",
+            "provider": {},
+            "areaHa": 394733.6044288499,
+            "bbox": [
+                112.371093750044,
+                -2.35087223984772,
+                113.475219726588,
+                -1.71406936894705
+            ],
+            "lock": false,
+            "info": {
+                "use": {}
+            }
+        }
+    }
+};
 
 module.exports = {
-    LIBERIA_ALERT_COUNT,
-    LIBERIA_AREA,
-    LIBERIA_SUBSCRIPTION_POINTS
+    LATEST_RESPONSE,
+    ALERT_COUNT_RESPONSE,
+    AREA_RESPONSE,
+    GEOSTORE_RESPONSE,
+    LIBERIA_SUBSCRIPTION_POINTS,
+    LIBERIA_GROUPED
 };

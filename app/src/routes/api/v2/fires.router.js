@@ -1,6 +1,6 @@
 const Router = require('koa-router');
 const logger = require('logger');
-const CartoDBServiceV2 = require('services/cartoDBServiceV2');
+const DatasetService = require('services/datasetService');
 const NotFound = require('errors/notFound');
 const ViirsFiresSerializerV2 = require('serializers/viirsFiresSerializerV2');
 
@@ -13,41 +13,40 @@ class ViirsFiresRouterV2 {
 
     static* getAdm0() {
         logger.info('Obtaining national data');
-        const data = yield CartoDBServiceV2.getAdm0(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true');
         logger.debug('obtained ', data);
         this.body = ViirsFiresSerializerV2.serialize(data);
     }
 
     static* getAdm1() {
         logger.info('Obtaining subnational data');
-        const data = yield CartoDBServiceV2.getAdm1(this.params.iso, this.params.id1, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true', this.params.id1);
         this.body = ViirsFiresSerializerV2.serialize(data);
     }
 
     static* getAdm2() {
         logger.info('Obtaining region data');
-        const data = yield CartoDBServiceV2.getAdm2(this.params.iso, this.params.id1, this.params.id2, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true', this.params.id1, this.params.id2);
         this.body = ViirsFiresSerializerV2.serialize(data);
     }
 
     static* use() {
         logger.info('Obtaining use data with name %s and id %s', this.params.name, this.params.id);
-        const data = yield CartoDBServiceV2.getUse(this.params.name, this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getUse(this.params.name, this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
         this.body = ViirsFiresSerializerV2.serialize(data);
 
     }
 
     static* wdpa() {
         logger.info('Obtaining wpda data with id %s', this.params.id);
-        const data = yield CartoDBServiceV2.getWdpa(this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = yield DatasetService.getWdpa(this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
         this.body = ViirsFiresSerializerV2.serialize(data);
     }
 
     static* world() {
         logger.info('Obtaining world data');
-        this.assert(this.query.geostore, 400, 'GeoJSON param required');
         try {
-            const data = yield CartoDBServiceV2.getWorld(this.query.geostore, this.query.forSubscription, this.query.period, this.query.group === 'true');
+            const data = yield DatasetService.getWorld(this.query.geostore, this.query.forSubscription, this.query.period, this.query.group === 'true');
 
             this.body = ViirsFiresSerializerV2.serialize(data);
         } catch (err) {
@@ -82,7 +81,7 @@ class ViirsFiresRouterV2 {
         logger.info('Obtaining world data with geostore');
         this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
         try {
-            const data = yield CartoDBServiceV2.getWorldWithGeojson(
+            const data = yield DatasetService.getWorldWithGeojson(
                 ViirsFiresRouterV2.checkGeojson(this.request.body.geojson),
                 this.query.forSubscription,
                 this.query.period,
@@ -102,7 +101,7 @@ class ViirsFiresRouterV2 {
 
     static* latest() {
         logger.info('Obtaining latest data');
-        const data = yield CartoDBServiceV2.latest(this.query.limit);
+        const data = yield DatasetService.latest();
         this.body = ViirsFiresSerializerV2.serializeLatest(data);
     }
 
