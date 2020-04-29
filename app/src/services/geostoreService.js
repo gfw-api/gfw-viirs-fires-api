@@ -66,6 +66,7 @@ class GeostoreService {
         }
         return yield deserializer(result.body);
     }
+
 }
 
 module.exports = GeostoreService;

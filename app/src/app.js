@@ -53,6 +53,7 @@ app.use(function* handleErrors(next) {
     this.response.type = 'application/vnd.api+json';
 });
 
+// eslint-disable-next-line import/no-unresolved
 const cache = require('lru-cache')({
     maxAge: 30000 // global max age
 });
@@ -67,6 +68,9 @@ app.use(require('koa-cash')({
     set(key, value) {
         logger.debug('Setting in cache. key: %s, value: ', key, value);
         cache.set(key, value);
+    },
+    hash() {
+        return this.request.originalUrl;
     }
 }));
 

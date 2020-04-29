@@ -18,7 +18,7 @@ let requester;
 nock.disableNetConnect();
 nock.enableNetConnect(process.env.HOST_IP);
 
-describe('V1 - Get active fires tests', () => {
+describe('V2 - Get active fires tests', () => {
 
     before(async () => {
         if (process.env.NODE_ENV !== 'test') {
@@ -28,7 +28,7 @@ describe('V1 - Get active fires tests', () => {
         requester = await getTestServer();
     });
 
-    it('Get correct downloadUrls (200) links when when querying for admin level data', async () => {
+    it('V2 Get correct downloadUrls (200) links when when querying for admin level data', async () => {
         const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27`;
         const areaQuery = `SELECT%20SUM(area__ha)%20AS%20value%20FROM%20table%20WHERE%20iso%20%3D%20%27LBR%27`;
 
@@ -56,11 +56,11 @@ describe('V1 - Get active fires tests', () => {
             .get(`/download/${config.get('datasets.viirs_gadm_all_id')}`)
             .query({
                 sql: downloadSql,
-                format: 'geojson'
+                format: 'json'
             })
             .reply(200);
 
-        const response = await requester.get(`/api/v1/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23`);
+        const response = await requester.get(`/api/v2/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));
         const { downloadUrls } = response.body.data.attributes;
@@ -71,13 +71,13 @@ describe('V1 - Get active fires tests', () => {
         response.body.data.attributes.value.should.equal(2415);
         response.body.data.attributes.areaHa.should.equal(11.137);
         downloadUrls.should.have.property('csv');
-        downloadUrls.should.have.property('geojson');
+        downloadUrls.should.have.property('json');
 
         try {
             const csvDownloadUrl = await axios.get(downloadUrls.csv);
             csvDownloadUrl.status.should.equal(200);
 
-            const jsonDownloadUrl = await axios.get(downloadUrls.geojson);
+            const jsonDownloadUrl = await axios.get(downloadUrls.json);
             jsonDownloadUrl.status.should.equal(200);
 
         } catch (error) {
@@ -86,7 +86,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     // test adm forSubscription
-    it('Get subscription response for admin level data', async () => {
+    it('V2 Get subscription response for admin level data', async () => {
         // eslint-disable-next-line max-len
         const lbrAlertQuery = `SELECT%20latitude%2C%20longitude%2C%20alert__date%20as%20acq_date%2C%20alert__time_utc%20as%20acq_time%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27`;
 
@@ -95,7 +95,7 @@ describe('V1 - Get active fires tests', () => {
             .query({ sql: lbrAlertQuery })
             .reply(200, LIBERIA_SUBSCRIPTION_POINTS);
 
-        const response = await requester.get(`/api/v1/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23&forSubscription=true`);
+        const response = await requester.get(`/api/v2/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23&forSubscription=true`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));
         response.status.should.equal(200);
@@ -108,7 +108,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     // test adm group
-    it('Get group response for admin level data', async () => {
+    it('V2 Get group response for admin level data', async () => {
         // eslint-disable-next-line max-len
         const lbrAlertQuery = `SELECT%20alert__date%20as%20day%2C%20SUM(alert__count)%20as%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27%20GROUP%20BY%20alert__date`;
 
@@ -117,7 +117,7 @@ describe('V1 - Get active fires tests', () => {
             .query({ sql: lbrAlertQuery })
             .reply(200, LIBERIA_GROUPED);
 
-        const response = await requester.get(`/api/v1/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23&group=true`);
+        const response = await requester.get(`/api/v2/viirs-active-fires/admin/LBR?period=2020-04-22%2C2020-04-23&group=true`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));
         response.status.should.equal(200);
@@ -130,7 +130,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     // test wdpa
-    it('Get response for wdpa data', async () => {
+    it('V2 Get response for wdpa data', async () => {
         // eslint-disable-next-line max-len
         const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20wdpa_protected_area__id%20%3D%20%2710%27`;
         const areaQuery = `SELECT%20SUM(area__ha)%20AS%20value%20FROM%20table%20WHERE%20wdpa_protected_area__id%20%3D%20%2710%27`;
@@ -145,7 +145,7 @@ describe('V1 - Get active fires tests', () => {
             .query({ sql: areaQuery })
             .reply(200, AREA_RESPONSE);
 
-        const response = await requester.get(`/api/v1/viirs-active-fires/wdpa/10?period=2020-04-22%2C2020-04-23`);
+        const response = await requester.get(`/api/v2/viirs-active-fires/wdpa/10?period=2020-04-22%2C2020-04-23`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));
         response.status.should.equal(200);
@@ -155,7 +155,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     // test world with geostore
-    it('Get response for geostore data', async () => {
+    it('V2 Get response for geostore data', async () => {
         // eslint-disable-next-line max-len
         const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27`;
 
@@ -171,7 +171,7 @@ describe('V1 - Get active fires tests', () => {
             .get(`/v1/geostore/351cfa10a38f86eeacad8a86ab7ce845`)
             .reply(200, GEOSTORE_RESPONSE);
 
-        const response = await requester.get(`/api/v1/viirs-active-fires?geostore=351cfa10a38f86eeacad8a86ab7ce845&period=2020-04-22%2C2020-04-23`);
+        const response = await requester.get(`/api/v2/viirs-active-fires?geostore=351cfa10a38f86eeacad8a86ab7ce845&period=2020-04-22%2C2020-04-23`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));
         response.status.should.equal(200);
@@ -181,7 +181,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     // test world with geojson
-    it('Get response for POST geojson', async () => {
+    it('V2 Get response for POST geojson', async () => {
         // eslint-disable-next-line max-len
         const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27`;
 
@@ -201,7 +201,7 @@ describe('V1 - Get active fires tests', () => {
             .get(`/v1/geostore/351cfa10a38f86eeacad8a86ab7ce845`)
             .reply(200, GEOSTORE_RESPONSE);
 
-        const response = await requester.post(`/api/v1/viirs-active-fires?period=2020-04-22%2C2020-04-23`).send({
+        const response = await requester.post(`/api/v2/viirs-active-fires?period=2020-04-22%2C2020-04-23`).send({
             geojson: {
                 type: 'Polygon',
                 coordinates: [
@@ -235,7 +235,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     // test latest
-    it('Get response from latest', async () => {
+    it('V2 Get response from latest', async () => {
         // eslint-disable-next-line max-len
         const latestQuery = `SELECT%20alert__date%20as%20date%0A%20%20%20%20%20%20%20%20FROM%20table%20ORDER%20BY%20alert__date%20DESC%0A%20%20%20%20%20%20%20%20LIMIT%201`;
 
@@ -247,12 +247,12 @@ describe('V1 - Get active fires tests', () => {
             .reply(200, LATEST_RESPONSE);
 
 
-        const response = await requester.get(`/api/v1/viirs-active-fires/latest`);
+        const response = await requester.get(`/api/v2/viirs-active-fires/latest`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));
         response.status.should.equal(200);
         response.body.should.have.property('data').and.be.an('object');
-        response.body.data.attributes.date.should.equal('2020-04-26');
+        response.body.data.attributes.latest.should.equal('2020-04-26');
     });
 
     afterEach(async () => {
