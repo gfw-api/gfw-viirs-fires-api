@@ -70,6 +70,20 @@ spec:
                 secretKeyRef:
                   name: mssecrets
                   key: CARTODB_USER
+          - name: DATASETS_URI
+            value: https://staging-api.globalforestwatch.org
+          - name: VIIRS_GADM_DAILY_DATASET_ID
+            value: 17388a14-b28e-4b76-bad7-2d174b9f143d
+          - name: VIIRS_GADM_ALL_DATASET_ID
+            value: 003539d8-b713-4df2-9e31-5eda80353191
+          - name: GADM_SUMMARY_ID
+            value: 848a6497-898b-44a7-b2dd-afe00426ed5f
+          - name: VIIRS_WDPA_DAILY_DATASET_ID
+            value: 93a566c7-4788-4745-afb5-940767627279
+          - name: VIIRS_WDPA_ALL_ID
+            value: 05d5c9ff-6134-4ec0-b7e1-6a5b4f50edab
+          - name: WDPA_SUMMARY_ID
+            value: 848a6497-898b-44a7-b2dd-afe00426ed5f
         ports:
           - containerPort: 3600
         readinessProbe:

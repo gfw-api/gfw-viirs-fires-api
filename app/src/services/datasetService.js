@@ -14,9 +14,7 @@ const LATEST = `SELECT alert__date as date
         FROM table ORDER BY alert__date DESC
         LIMIT {{limit}}`;
 
-const getDateString = (date) => {
-    return `${date.getFullYear().toString()}-${('0' + (date.getMonth() + 1).toString()).slice(-2)}-${('0' + date.getDate().toString()).slice(-2)}`;
-};
+const getDateString = (date) => `${date.getFullYear().toString()}-${(`0${(date.getMonth() + 1).toString()}`).slice(-2)}-${(`0${date.getDate().toString()}`).slice(-2)}`;
 
 const getToday = () => {
     const today = new Date();
@@ -56,7 +54,7 @@ const getPeriodText = (period) => {
 // eslint-disable-next-line consistent-return
 const getDownloadUrls = (query, params, datasetId) => {
     try {
-        const formats = ['csv', 'geojson'];
+        const formats = ['csv', 'geojson', 'json'];
         const download = {};
         let queryFinal = Mustache.render(query, params);
         queryFinal = queryFinal.replace('SELECT SUM(alert__count) AS value', 'SELECT *');
@@ -83,10 +81,11 @@ const getQueryForGroup = (query) => {
 
 
 class DatasetService {
+
     static* queryDataset(dataset, sql, params = {}, geostore = null) {
-        const sqlRendered = Mustache.render(sql, params)
+        const sqlRendered = Mustache.render(sql, params);
         logger.debug('Running dataset with sql: %s', sqlRendered);
-        let uri = `/query/${dataset}?sql=${encodeURIComponent(sqlRendered)}`
+        let uri = `/query/${dataset}?sql=${encodeURIComponent(sqlRendered)}`;
         if (geostore) {
             uri += `&geostore=${geostore}`;
         }
@@ -103,6 +102,7 @@ class DatasetService {
         return yield result.body;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     * getAdm(iso, forSubscription, period = defaultDate(), group = false, adm1 = null, adm2 = null) {
         logger.debug('Obtaining national of iso %s and period %s', iso, period);
         const periods = period.split(',');
@@ -136,9 +136,9 @@ class DatasetService {
             summary: config.get('datasets.gadm_summary_id')
         };
 
-        logger.debug(`All the way home`)
+        logger.debug(`All the way home`);
 
-        return yield this.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
+        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
     }
 
     * getUse(useName, useTable, id, forSubscription, period = defaultDate(), group = false) {
@@ -152,6 +152,7 @@ class DatasetService {
         return null;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     * getWdpa(wdpaid, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
         const periods = period.split(',');
@@ -173,10 +174,11 @@ class DatasetService {
             summary: config.get('datasets.wdpa_summary_id')
         };
 
-        return yield this.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
+        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     * getWorld(hashGeoStore, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
         const periods = period.split(',');
@@ -192,7 +194,7 @@ class DatasetService {
             summary: config.get('datasets.viirs_gadm_all_id')
         };
 
-        return yield this.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, null, hashGeoStore);
+        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, null, hashGeoStore);
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -200,12 +202,12 @@ class DatasetService {
         logger.debug('Executing query with geojson', geojson);
         const newGeostore = yield GeostoreService.createGeostore(geojson);
 
-        logger.debug(`Create new geostore: ${JSON.stringify(newGeostore)}`)
+        logger.debug(`Create new geostore: ${JSON.stringify(newGeostore)}`);
         const geostoreHash = newGeostore.id;
         return yield this.getWorld(geostoreHash, forSubscription, period, group);
     }
 
-    * getViirsAlerts(alertQuery, queryParams, datasetIds, period, forSubscription, group, areaQuery = null, geostore = null) {
+    static* getViirsAlerts(alertQuery, queryParams, datasetIds, period, forSubscription, group, areaQuery = null, geostore = null) {
         if (forSubscription) {
             const query = getURLForSubscription(alertQuery);
             const result = yield DatasetService.queryDataset(datasetIds.all, query, queryParams);
@@ -245,16 +247,18 @@ class DatasetService {
         return result;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     * latest(limit = 1) {
         logger.debug('Obtaining latest with limit %s', limit);
         const params = {
             limit
         };
-        const response = yield DatasetService.queryDataset(config.get('datasets.viirs_gadm_all_id'), LATEST, params)
+        const response = yield DatasetService.queryDataset(config.get('datasets.viirs_gadm_all_id'), LATEST, params);
         logger.debug('response', response);
         if (response.data && response.data.length > 0) {
             // for some reason DISTINCT doesn't work for ES, so just returning latest
             const result = response.data[0];
+            result.latest = result.date;
             return result;
         }
         return null;
