@@ -21,6 +21,8 @@ Execution using Docker requires:
 
 Dependencies on other Microservices:
 - [Geostore](https://github.com/gfw-api/gfw-geostore-api/)
+- [Dataset](https://github.com/resource-watch/dataset/)
+- [Query](https://github.com/resource-watch/query/)
 
 ## Getting started
 

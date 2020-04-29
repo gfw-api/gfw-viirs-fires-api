@@ -4,8 +4,5 @@
     "level": "info",
     "toFile": false,
     "dirLogFile": null
-  },
-  "datasets": {
-    "uri": "https://production-api.globalforestwatch.org"
   }
 }

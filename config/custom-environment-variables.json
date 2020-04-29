@@ -4,5 +4,14 @@
   },
   "logger": {
     "level": "LOGGER_LEVEL"
+  },
+  "datasets": {
+    "uri": "DATASETS_URI",
+    "viirs_gadm_daily_id": "VIIRS_GADM_DAILY_DATASET_ID",
+    "viirs_gadm_all_id": "VIIRS_GADM_ALL_DATASET_ID",
+    "gadm_summary_id": "GADM_SUMMARY_DATASET_ID",
+    "viirs_wdpa_daily_id": "VIIRS_WDPA_DAILY_DATASET_ID",
+    "viirs_wdpa_all_id": "VIIRS_WDPA_ALL_DATASET_ID",
+    "wdpa_summary_id": "WDPA_SUMMARY_DATASET_ID"
   }
 }
