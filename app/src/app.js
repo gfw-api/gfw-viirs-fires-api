@@ -53,7 +53,6 @@ app.use(function* handleErrors(next) {
     this.response.type = 'application/vnd.api+json';
 });
 
-// eslint-disable-next-line import/no-unresolved
 const cache = require('lru-cache')({
     maxAge: 30000 // global max age
 });
