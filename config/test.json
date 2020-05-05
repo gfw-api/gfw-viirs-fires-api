@@ -4,8 +4,5 @@
     "level": "debug",
     "toFile": false,
     "dirLogFile": null
-  },
-  "cartoDB": {
-    "user": "cartotest"
   }
 }
