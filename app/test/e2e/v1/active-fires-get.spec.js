@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars,no-undef */
 const nock = require('nock');
 const chai = require('chai');
 const config = require('config');
@@ -29,6 +28,7 @@ describe('V1 - Get active fires tests', () => {
     });
 
     it('Get correct downloadUrls (200) links when when querying for admin level data', async () => {
+        // eslint-disable-next-line max-len
         const alertQuery = `SELECT%20SUM(alert__count)%20AS%20value%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20%27h%27%20OR%20confidence__cat%20%3D%20%27n%27)%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20%272020-04-22%27%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20%272020-04-23%27%20AND%20iso%20%3D%20%27LBR%27`;
         const areaQuery = `SELECT%20SUM(area__ha)%20AS%20value%20FROM%20table%20WHERE%20iso%20%3D%20%27LBR%27`;
 
@@ -43,6 +43,7 @@ describe('V1 - Get active fires tests', () => {
             .reply(200, AREA_RESPONSE);
 
         // mock download urls
+        // eslint-disable-next-line max-len
         const downloadSql = `SELECT%20*%20FROM%20table%0A%20%20%20%20WHERE%20(confidence__cat%20%3D%20'h'%20OR%20confidence__cat%20%3D%20'n')%20%0A%20%20%20%20%20AND%20alert__date%20%3E%3D%20'2020-04-22'%0A%20%20%20%20%20AND%20alert__date%20%3C%3D%20'2020-04-23'%20AND%20iso%20%3D%20'LBR'`;
         nock(config.get('datasets.uri'), { encodedQueryParams: true })
             .get(`/download/${config.get('datasets.viirs_gadm_all_id')}`)
