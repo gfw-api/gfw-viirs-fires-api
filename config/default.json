@@ -10,10 +10,6 @@
     "name": "GFW Fires API",
     "port": 3600
   },
-  "cartoDB": {
-    "user": null,
-    "apiUrl": "https://wri-01.cartodb.com/api/v2/sql"
-  },
   "datasets": {
     "uri": "https://staging-api.globalforestwatch.org",
     "viirs_gadm_daily_id": "17388a14-b28e-4b76-bad7-2d174b9f143d",
