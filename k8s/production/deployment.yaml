@@ -63,11 +63,6 @@ spec:
                 secretKeyRef:
                   name: mssecrets
                   key: API_VERSION
-          - name: CARTODB_USER
-            valueFrom:
-                secretKeyRef:
-                  name: mssecrets
-                  key: CARTODB_USER
           - name: DATASETS_URI
             value: https://staging-api.globalforestwatch.org
           - name: VIIRS_GADM_DAILY_DATASET_ID
