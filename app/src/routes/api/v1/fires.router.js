@@ -124,7 +124,7 @@ class ViirsFiresRouter {
 
     static* latest() {
         logger.info('Obtaining latest data');
-        const data = yield DatasetService.latest(1);
+        const data = yield DatasetService.latest();
         this.body = ViirsFiresSerializer.serializeLatest(data);
     }
 

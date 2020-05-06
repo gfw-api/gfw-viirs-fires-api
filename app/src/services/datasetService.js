@@ -102,8 +102,7 @@ class DatasetService {
         return yield result.body;
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    * getAdm(iso, forSubscription, period = defaultDate(), group = false, adm1 = null, adm2 = null) {
+    static* getAdm(iso, forSubscription, period = defaultDate(), group = false, adm1 = null, adm2 = null) {
         logger.debug('Obtaining national of iso %s and period %s', iso, period);
         const periods = period.split(',');
         const params = {
@@ -141,19 +140,18 @@ class DatasetService {
         return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
     }
 
-    * getUse(useName, useTable, id, forSubscription, period = defaultDate(), group = false) {
+    static* getUse(useName, useTable, id, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining use with id %s', id);
 
         // no special table for use, so just get geostore hash and do query on all points with geostore filter
         const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
         if (geostore) {
-            return yield this.getWorld(geostore.data.id, forSubscription, period, group);
+            return yield DatasetService.getWorld(geostore.data.id, forSubscription, period, group);
         }
         return null;
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    * getWdpa(wdpaid, forSubscription, period = defaultDate(), group = false) {
+    static* getWdpa(wdpaid, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
         const periods = period.split(',');
         const params = {
@@ -178,8 +176,7 @@ class DatasetService {
     }
 
 
-    // eslint-disable-next-line class-methods-use-this
-    * getWorld(hashGeoStore, forSubscription, period = defaultDate(), group = false) {
+    static* getWorld(hashGeoStore, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
         const periods = period.split(',');
         const params = {
@@ -197,8 +194,7 @@ class DatasetService {
         return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, null, hashGeoStore);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    * getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), group = false) {
+    static* getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Executing query with geojson', geojson);
         const newGeostore = yield GeostoreService.createGeostore(geojson);
 
@@ -247,8 +243,7 @@ class DatasetService {
         return result;
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    * latest(limit = 1) {
+    static* latest(limit = 1) {
         logger.debug('Obtaining latest with limit %s', limit);
         const params = {
             limit
@@ -266,4 +261,4 @@ class DatasetService {
 
 }
 
-module.exports = new DatasetService();
+module.exports = DatasetService;
