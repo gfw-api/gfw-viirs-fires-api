@@ -66,6 +66,7 @@ spec:
           - name: DATASETS_URI
             value: https://production-api.globalforestwatch.org
           - name: VIIRS_GADM_DAILY_DATASET_ID
+<<<<<<< HEAD
             value: 875863d1-35bb-44f2-8b71-03beb5c90c38
           - name: VIIRS_GADM_ALL_DATASET_ID
             value: a2475f80-e48b-455d-b8d1-198bd6b8e91d
@@ -75,6 +76,19 @@ spec:
             value: 43371354-4a60-4cac-afd9-1e4627682ea2
           - name: WDPA_SUMMARY_ID
             value: 5ca5434d-17b3-427b-b540-612189da61e7
+=======
+            value: NA
+          - name: VIIRS_GADM_ALL_DATASET_ID
+            value: NA
+          - name: GADM_SUMMARY_ID
+            value: NA
+          - name: VIIRS_WDPA_DAILY_DATASET_ID
+            value: NA
+          - name: VIIRS_WDPA_ALL_ID
+            value: 05d5c9ff-6134-4ec0-b7e1-6a5b4f50edab
+          - name: WDPA_SUMMARY_ID
+            value: NA
+>>>>>>> Add further documentation on changes
         ports:
           - containerPort: 3600
         readinessProbe:
