@@ -641,15 +641,6 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-5.3.1.tgz#e3c9b31569e106811df242f715725a1f4c494320"
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
-cartodb@0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/cartodb/-/cartodb-0.4.0.tgz#fa31987fb87b2e33acc8a71e54a55113878e5928"
-  integrity sha1-+jGYf7h7LjOsyKceVKVRE4eOWSg=
-  dependencies:
-    debug "~0.7.2"
-    mustache "^2.2.1"
-    request latest
-
 caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
@@ -1104,11 +1095,6 @@ debug@^2.0.0, debug@^2.2.0, debug@^2.3.3, debug@^2.6.9:
   integrity sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==
   dependencies:
     ms "2.0.0"
-
-debug@~0.7.2:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-0.7.4.tgz#06e1ea8082c2cb14e39806e22e2f6f757f92af39"
-  integrity sha1-BuHqgILCyxTjmAbiLi9vdX+Srzk=
 
 decamelize@^1.1.2, decamelize@^1.2.0:
   version "1.2.0"
@@ -3480,11 +3466,6 @@ mustache@2.2.1:
   resolved "https://registry.yarnpkg.com/mustache/-/mustache-2.2.1.tgz#2c40ca21c278f53150682bcf9090e41a3339b876"
   integrity sha1-LEDKIcJ49TFQaCvPkJDkGjM5uHY=
 
-mustache@^2.2.1:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/mustache/-/mustache-2.3.2.tgz#a6d4d9c3f91d13359ab889a812954f9230a3d0c5"
-  integrity sha512-KpMNwdQsYz3O/SBS1qJ/o3sqUJ5wSb8gb0pul8CO0S56b9Y2ALm8zCfsjPXsqGFfoNBkDwZuZIAjhsZI03gYVQ==
-
 mute-stream@0.0.8:
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
@@ -4391,7 +4372,7 @@ repeating@^2.0.0:
   dependencies:
     is-finite "^1.0.0"
 
-request@*, request@^2.81.0, request@latest:
+request@*, request@^2.81.0:
   version "2.88.2"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.2.tgz#d73c918731cb5a87da047e207234146f664d12b3"
   integrity sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==
