@@ -146,6 +146,10 @@ describe('V2 - Get active fires tests', () => {
             .query({ sql: areaQuery })
             .reply(200, AREA_RESPONSE);
 
+        nock(process.env.CT_URL, { encodedQueryParams: true })
+            .get(`/v1/geostore/wdpa/10`)
+            .reply(200, GEOSTORE_RESPONSE);
+
         const response = await requester.get(`/api/v2/viirs-active-fires/wdpa/10?period=2020-04-22%2C2020-04-23`);
 
         logger.debug('Response: %s', JSON.stringify(response.body));

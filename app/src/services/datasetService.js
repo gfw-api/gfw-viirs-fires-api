@@ -168,11 +168,14 @@ class DatasetService {
 
         const datasetIds = {
             daily: config.get('datasets.viirs_wdpa_daily_id'),
-            all: config.get('datasets.viirs_wdpa_all_id'),
+            all: config.get('datasets.viirs_gadm_all_id'),
             summary: config.get('datasets.wdpa_summary_id')
         };
 
-        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
+        const geostore = yield GeostoreService.getGeostoreByWdpa(wdpaid)
+        const geostoreHash = geostore.id
+
+        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery, geostoreHash);
     }
 
 
@@ -186,9 +189,7 @@ class DatasetService {
         const alertQuery = NUM_ALERTS;
 
         const datasetIds = {
-            daily: config.get('datasets.viirs_gadm_all_id'),
             all: config.get('datasets.viirs_gadm_all_id'),
-            summary: config.get('datasets.viirs_gadm_all_id')
         };
 
         return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, null, hashGeoStore);
@@ -206,16 +207,27 @@ class DatasetService {
     static* getViirsAlerts(alertQuery, queryParams, datasetIds, period, forSubscription, group, areaQuery = null, geostore = null) {
         if (forSubscription) {
             const query = getURLForSubscription(alertQuery);
-            const result = yield DatasetService.queryDataset(datasetIds.all, query, queryParams);
+            const result = yield DatasetService.queryDataset(datasetIds.all, query, queryParams, geostore);
             return result.data;
         }
         if (group) {
             const query = getQueryForGroup(alertQuery);
-            const result = yield DatasetService.queryDataset(datasetIds.daily, query, queryParams);
+            let result = null;
+            if (datasetIds.daily) {
+                result = yield DatasetService.queryDataset(datasetIds.daily, query, queryParams);
+            } else {
+                result = yield DatasetService.queryDataset(datasetIds.all, query, queryParams, geostore);
+            }
             return result.data;
         }
 
-        const numAlertsResponse = yield DatasetService.queryDataset(datasetIds.daily, alertQuery, queryParams, geostore);
+        let numAlertsResponse = null;
+        if (datasetIds.daily) {
+            numAlertsResponse = yield DatasetService.queryDataset(datasetIds.daily, alertQuery, queryParams);
+        } else {
+            numAlertsResponse = yield DatasetService.queryDataset(datasetIds.all, alertQuery, queryParams, geostore);
+        }
+
         let numAlerts = 0;
         if (numAlertsResponse && numAlertsResponse.data) {
             numAlerts = numAlertsResponse.data[0].value;
@@ -234,7 +246,6 @@ class DatasetService {
             }
         }
 
-        logger.debug(`The area: ${areaHa}`);
         const result = {};
         result.value = numAlerts;
         result.area_ha = areaHa;
