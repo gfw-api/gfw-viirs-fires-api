@@ -68,17 +68,15 @@ spec:
           - name: DATASETS_URI
             value: https://staging-api.globalforestwatch.org
           - name: VIIRS_GADM_DAILY_DATASET_ID
-            value: 17388a14-b28e-4b76-bad7-2d174b9f143d
+            value: 6e451fd5-5241-451b-872f-27f7b87e6a5d
           - name: VIIRS_GADM_ALL_DATASET_ID
-            value: 003539d8-b713-4df2-9e31-5eda80353191
+            value: 9223ef23-7329-4987-8720-b5a87305f57d
           - name: GADM_SUMMARY_ID
-            value: 848a6497-898b-44a7-b2dd-afe00426ed5f
+            value: 88c862b0-37a9-4d0d-a62d-a632df08f9fa
           - name: VIIRS_WDPA_DAILY_DATASET_ID
-            value: 93a566c7-4788-4745-afb5-940767627279
-          - name: VIIRS_WDPA_ALL_ID
-            value: 05d5c9ff-6134-4ec0-b7e1-6a5b4f50edab
+            value: c8040782-9dbb-4f6a-a8f8-51d43afdf81a
           - name: WDPA_SUMMARY_ID
-            value: 848a6497-898b-44a7-b2dd-afe00426ed5f
+            value: 39bb6274-585f-4402-8929-f080d34c65c3
         ports:
           - containerPort: 3600
         readinessProbe:
