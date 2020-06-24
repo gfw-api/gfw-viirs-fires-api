@@ -35,7 +35,7 @@
   "homepage": "https://github.com/gfw-api/gfw-viirs-fires-api#readme",
   "dependencies": {
     "axios": "^0.19.2",
-    "bunyan": "1.7.1",
+    "bunyan": "1.8.13",
     "co": "4.6.0",
     "co-request": "1.0.0",
     "config": "1.19.0",
