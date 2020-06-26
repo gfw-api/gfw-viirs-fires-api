@@ -67,6 +67,7 @@ spec:
             value: https://production-api.globalforestwatch.org
           - name: VIIRS_GADM_DAILY_DATASET_ID
 <<<<<<< HEAD
+<<<<<<< HEAD
             value: 875863d1-35bb-44f2-8b71-03beb5c90c38
           - name: VIIRS_GADM_ALL_DATASET_ID
             value: a2475f80-e48b-455d-b8d1-198bd6b8e91d
@@ -78,15 +79,22 @@ spec:
             value: 5ca5434d-17b3-427b-b540-612189da61e7
 =======
             value: NA
+=======
+            value: 875863d1-35bb-44f2-8b71-03beb5c90c38
+>>>>>>> Add production deployment variables
           - name: VIIRS_GADM_ALL_DATASET_ID
-            value: NA
+            value: a2475f80-e48b-455d-b8d1-198bd6b8e91d
           - name: GADM_SUMMARY_ID
-            value: NA
+            value: debb1526-4994-4c3b-9304-e536d1cde694
           - name: VIIRS_WDPA_DAILY_DATASET_ID
-            value: NA
+            value: 43371354-4a60-4cac-afd9-1e4627682ea2
           - name: WDPA_SUMMARY_ID
+<<<<<<< HEAD
             value: NA
 >>>>>>> Add further documentation on changes
+=======
+            value: 5ca5434d-17b3-427b-b540-612189da61e7
+>>>>>>> Add production deployment variables
         ports:
           - containerPort: 3600
         readinessProbe:
