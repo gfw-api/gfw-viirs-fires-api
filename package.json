@@ -43,7 +43,7 @@
     "jsonapi-serializer": "2.1.1",
     "koa": "1.1.2",
     "koa-bodyparser": "2.0.1",
-    "koa-cash": "2.0.0",
+    "koa-cash": "4.0.4",
     "koa-convert": "^1.2.0",
     "koa-logger": "1.3.0",
     "koa-mount": "1.3.0",
