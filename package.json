@@ -50,7 +50,7 @@
     "koa-router": "5.4.0",
     "koa-simple-healthcheck": "^0.0.1",
     "koa-validate": "0.2.11",
-    "lru-cache": "4.0.1",
+    "lru-cache": "5.1.1",
     "mustache": "2.2.1",
     "request": "^2.81.0",
     "vizz.microservice-client": "1.6.2"
