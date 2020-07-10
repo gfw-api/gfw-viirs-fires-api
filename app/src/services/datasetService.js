@@ -52,7 +52,7 @@ const getPeriodText = (period) => {
 };
 
 // eslint-disable-next-line consistent-return
-const getDownloadUrls = (query, params, datasetId) => {
+const getDownloadUrls = (query, params, datasetId, geostore=null) => {
     try {
         const formats = ['csv', 'geojson', 'json'];
         const download = {};
@@ -61,6 +61,9 @@ const getDownloadUrls = (query, params, datasetId) => {
         queryFinal = encodeURIComponent(queryFinal);
         for (let i = 0, { length } = formats; i < length; i++) {
             download[formats[i]] = `${config.get('datasets.uri')}/download/${datasetId}?sql=${queryFinal}&format=${formats[i]}`;
+            if (geostore) {
+                download[formats[i]] += `&geostore=${geostore}`;
+            }
         }
         return download;
     } catch (err) {
