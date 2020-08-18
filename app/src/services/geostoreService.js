@@ -55,7 +55,7 @@ class GeostoreService {
             uri: `/geostore`,
             method: 'POST',
             json: true,
-            data: {
+            body: {
                 geojson
             }
         });
