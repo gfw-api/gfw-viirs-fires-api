@@ -72,7 +72,7 @@ spec:
           - name: GADM_SUMMARY_ID
             value: f777eed9-be53-441d-95fa-cd162528e1fb
           - name: VIIRS_WDPA_DAILY_DATASET_ID
-            value: 43371354-4a60-4cac-afd9-1e4627682ea2
+            value: 46aa211a-f1e7-491c-af26-1dfcf1e88c91
           - name: WDPA_SUMMARY_ID
             value: c3f8b7aa-22ae-4faf-893b-f1717ecb4875
         ports:
