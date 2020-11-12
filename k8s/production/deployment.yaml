@@ -66,15 +66,15 @@ spec:
           - name: DATASETS_URI
             value: https://production-api.globalforestwatch.org
           - name: VIIRS_GADM_DAILY_DATASET_ID
-            value: c1bb5e10-4da9-4776-8362-ab48a746fcb5
+            value: 1c72bdb6-0f93-4319-bf47-e2f23c5f0e37
           - name: VIIRS_GADM_ALL_DATASET_ID
-            value: 76642243-d895-48f7-b8e8-5333851bd00f
+            value: 7af31612-a88a-4910-9b11-88c355b2f7a4
           - name: GADM_SUMMARY_ID
-            value: f777eed9-be53-441d-95fa-cd162528e1fb
+            value: c725724d-60ba-437e-a0a3-6a030af47e14
           - name: VIIRS_WDPA_DAILY_DATASET_ID
-            value: 46aa211a-f1e7-491c-af26-1dfcf1e88c91
+            value: 3001b513-52f5-4f58-bc92-e7f725f8aa49
           - name: WDPA_SUMMARY_ID
-            value: c3f8b7aa-22ae-4faf-893b-f1717ecb4875
+            value: f99c0bd8-f331-496a-b708-0142067dbd5b
         ports:
           - containerPort: 3600
         readinessProbe:
