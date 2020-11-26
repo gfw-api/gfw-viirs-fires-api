@@ -1,35 +1,33 @@
 const config = require('config');
 const logger = require('logger');
-const path = require('path');
-const koa = require('koa');
-const bodyParser = require('koa-bodyparser');
+const Koa = require('koa');
+const koaBody = require('koa-body');
 const koaLogger = require('koa-logger');
 const loader = require('loader');
-const validate = require('koa-validate');
-const convert = require('koa-convert');
+const koaValidate = require('koa-validate');
 const koaSimpleHealthCheck = require('koa-simple-healthcheck');
 const ErrorSerializer = require('serializers/errorSerializer');
+const ctRegisterMicroservice = require('ct-register-microservice-node');
+const koaCash = require('koa-cash');
 
-
-// const nock = require('nock');
-// nock.recorder.rec();
-
-// instance of koa
-const app = koa();
+const app = new Koa();
 
 // if environment is dev then load koa-logger
 if (process.env.NODE_ENV === 'dev') {
     app.use(koaLogger());
 }
 
-app.use(bodyParser({
-    jsonLimit: '50mb'
+app.use(koaBody({
+    multipart: true,
+    jsonLimit: '50mb',
+    formLimit: '50mb',
+    textLimit: '50mb'
 }));
 
 // catch errors and send in jsonapi standard. Always return vnd.api+json
-app.use(function* handleErrors(next) {
+app.use(async (ctx, next) => {
     try {
-        yield next;
+        await next();
     } catch (inErr) {
         let error = inErr;
         try {
@@ -38,69 +36,63 @@ app.use(function* handleErrors(next) {
             logger.debug('Could not parse error message - is it JSON?: ', inErr);
             error = inErr;
         }
-        this.status = error.status || this.status || 500;
-        if (this.status >= 500) {
+        ctx.status = error.status || ctx.status || 500;
+        if (ctx.status >= 500) {
             logger.error(error);
         } else {
             logger.info(error);
         }
 
-        this.body = ErrorSerializer.serializeError(this.status, error.message);
-        if (process.env.NODE_ENV === 'prod' && this.status === 500) {
-            this.body = 'Unexpected error';
+        ctx.body = ErrorSerializer.serializeError(ctx.status, error.message);
+        if (process.env.NODE_ENV === 'prod' && ctx.status === 500) {
+            ctx.body = 'Unexpected error';
         }
+        ctx.response.type = 'application/vnd.api+json';
     }
-    this.response.type = 'application/vnd.api+json';
 });
+
 
 const cache = require('lru-cache')({
     maxAge: 30000 // global max age
 });
 
-app.use(convert.back(koaSimpleHealthCheck()));
+app.use(koaSimpleHealthCheck());
 
-app.use(require('koa-cash')({
-    get(key) {
+app.use(koaCash({
+    get: (key) => {
         logger.debug('Getting the cache key: %s', key);
         return cache.get(key);
     },
-    set(key, value) {
+    set: (key, value) => {
         logger.debug('Setting in cache. key: %s, value: ', key, value);
         cache.set(key, value);
     },
-    hash() {
-        return this.request.originalUrl;
-    }
+    hash: (ctx) => ctx.request.originalUrl
 }));
 
-// load custom validator
-app.use(validate());
+koaValidate(app);
 
 // load routes
 loader.loadRoutes(app);
 
-// Instance of http module
-const server = require('http').Server(app.callback());
-
-// get port of environment, if not exist obtain of the config.
-// In production environment, the port must be declared in environment variable
 const port = process.env.PORT || config.get('service.port');
 
-module.exports = server.listen(port, () => {
-    const microserviceClient = require('vizz.microservice-client');
-
-    microserviceClient.register({
-        id: config.get('service.id'),
+const server = app.listen(port, () => {
+    ctRegisterMicroservice.register({
         name: config.get('service.name'),
-        dirConfig: path.join(__dirname, '../microservice'),
-        dirPackage: path.join(__dirname, '../../'),
+        info: require('../microservice/register.json'),
+        swagger: require('../microservice/public-swagger.json'),
+        mode: (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') ? ctRegisterMicroservice.MODE_AUTOREGISTER : ctRegisterMicroservice.MODE_NORMAL,
+        framework: ctRegisterMicroservice.KOA2,
+        app,
         logger,
-        app
+        ctUrl: process.env.CT_URL,
+        url: process.env.LOCAL_URL,
+        token: process.env.CT_TOKEN,
+        active: true
     });
-    if (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') {
-        logger.info('Autoregistering');
-        microserviceClient.autoDiscovery(config.get('service.name')).then(() => logger.info('Registered'), (err) => logger.error('Error registering', err));
-    }
 });
 
-logger.info(`Server started in port:${port}`);
+logger.info('Server started in ', process.env.PORT);
+
+module.exports = server;

@@ -11,47 +11,47 @@ const router = new Router({
 
 class ViirsFiresRouterV2 {
 
-    static* getAdm0() {
+    static async getAdm0(ctx) {
         logger.info('Obtaining national data');
-        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true');
+        const data = await DatasetService.getAdm(ctx.request.params.iso, ctx.request.query.forSubscription, ctx.request.query.period, ctx.request.query.group === 'true');
         logger.debug('obtained ', data);
-        this.body = ViirsFiresSerializerV2.serialize(data);
+        ctx.response.body = ViirsFiresSerializerV2.serialize(data);
     }
 
-    static* getAdm1() {
+    static async getAdm1(ctx) {
         logger.info('Obtaining subnational data');
-        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true', this.params.id1);
-        this.body = ViirsFiresSerializerV2.serialize(data);
+        const data = await DatasetService.getAdm(ctx.request.params.iso, ctx.request.query.forSubscription, ctx.request.query.period, ctx.request.query.group === 'true', ctx.request.params.id1);
+        ctx.response.body = ViirsFiresSerializerV2.serialize(data);
     }
 
-    static* getAdm2() {
+    static async getAdm2(ctx) {
         logger.info('Obtaining region data');
-        const data = yield DatasetService.getAdm(this.params.iso, this.query.forSubscription, this.query.period, this.query.group === 'true', this.params.id1, this.params.id2);
-        this.body = ViirsFiresSerializerV2.serialize(data);
+        const data = await DatasetService.getAdm(ctx.request.params.iso, ctx.request.query.forSubscription, ctx.request.query.period, ctx.request.query.group === 'true', ctx.request.params.id1, ctx.request.params.id2);
+        ctx.response.body = ViirsFiresSerializerV2.serialize(data);
     }
 
-    static* use() {
-        logger.info('Obtaining use data with name %s and id %s', this.params.name, this.params.id);
-        const data = yield DatasetService.getUse(this.params.name, this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
-        this.body = ViirsFiresSerializerV2.serialize(data);
+    static async use(ctx) {
+        logger.info('Obtaining use data with name %s and id %s', ctx.request.params.name, ctx.request.params.id);
+        const data = await DatasetService.getUse(ctx.request.params.name, ctx.request.params.id, ctx.request.query.forSubscription, ctx.request.query.period, ctx.request.query.group === 'true');
+        ctx.response.body = ViirsFiresSerializerV2.serialize(data);
 
     }
 
-    static* wdpa() {
-        logger.info('Obtaining wpda data with id %s', this.params.id);
-        const data = yield DatasetService.getWdpa(this.params.id, this.query.forSubscription, this.query.period, this.query.group === 'true');
-        this.body = ViirsFiresSerializerV2.serialize(data);
+    static async wdpa(ctx) {
+        logger.info('Obtaining wpda data with id %s', ctx.request.params.id);
+        const data = await DatasetService.getWdpa(ctx.request.params.id, ctx.request.query.forSubscription, ctx.request.query.period, ctx.request.query.group === 'true');
+        ctx.response.body = ViirsFiresSerializerV2.serialize(data);
     }
 
-    static* world() {
+    static async world(ctx) {
         logger.info('Obtaining world data');
         try {
-            const data = yield DatasetService.getWorld(this.query.geostore, this.query.forSubscription, this.query.period, this.query.group === 'true');
+            const data = await DatasetService.getWorld(ctx.request.query.geostore, ctx.request.query.forSubscription, ctx.request.query.period, ctx.request.query.group === 'true');
 
-            this.body = ViirsFiresSerializerV2.serialize(data);
+            ctx.response.body = ViirsFiresSerializerV2.serialize(data);
         } catch (err) {
             if (err instanceof NotFound) {
-                this.throw(404, 'Geostore not found');
+                ctx.throw(404, 'Geostore not found');
                 return;
             }
             throw err;
@@ -77,21 +77,21 @@ class ViirsFiresRouterV2 {
         return geojson;
     }
 
-    static* worldWithGeojson() {
+    static async worldWithGeojson(ctx) {
         logger.info('Obtaining world data with geostore');
-        this.assert(this.request.body.geojson, 400, 'GeoJSON param required');
+        ctx.assert(ctx.request.body.geojson, 400, 'GeoJSON param required');
         try {
-            const data = yield DatasetService.getWorldWithGeojson(
-                ViirsFiresRouterV2.checkGeojson(this.request.body.geojson),
-                this.query.forSubscription,
-                this.query.period,
-                this.query.group === 'true'
+            const data = await DatasetService.getWorldWithGeojson(
+                ViirsFiresRouterV2.checkGeojson(ctx.request.body.geojson),
+                ctx.request.query.forSubscription,
+                ctx.request.query.period,
+                ctx.request.query.group === 'true'
             );
 
-            this.body = ViirsFiresSerializerV2.serialize(data);
+            ctx.response.body = ViirsFiresSerializerV2.serialize(data);
         } catch (err) {
             if (err instanceof NotFound) {
-                this.throw(404, 'Geostore not found');
+                ctx.throw(404, 'Geostore not found');
                 return;
             }
             throw err;
@@ -99,19 +99,19 @@ class ViirsFiresRouterV2 {
 
     }
 
-    static* latest() {
+    static async latest(ctx) {
         logger.info('Obtaining latest data');
-        const data = yield DatasetService.latest();
-        this.body = ViirsFiresSerializerV2.serializeLatest(data);
+        const data = await DatasetService.latest();
+        ctx.response.body = ViirsFiresSerializerV2.serializeLatest(data);
     }
 
 }
 
-const isCached = function* isCached(next) {
-    if (yield this.cashed()) {
+const isCached = async (ctx, next) => {
+    if (await ctx.cashed()) {
         return;
     }
-    yield next;
+    await next();
 };
 
 router.get('/admin/:iso', isCached, ViirsFiresRouterV2.getAdm0);

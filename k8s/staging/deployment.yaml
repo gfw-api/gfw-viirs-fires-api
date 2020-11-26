@@ -1,16 +1,24 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: gfw
   labels:
     name: viirs-fires
   name: viirs-fires
+  namespace: gfw
 spec:
+  progressDeadlineSeconds: 2147483647
+  replicas: 1
   revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      name: viirs-fires
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
-      annotations:
-        chaos.alpha.kubernetes.io/enabled: "true"
       labels:
         name: viirs-fires
     spec:
@@ -24,77 +32,86 @@ spec:
                     values:
                       - apps
       containers:
-      - name: viirs-fires
-        image: vizzuality/viirs-fires
-        imagePullPolicy: Always
-        resources:
-          requests:
-            cpu: "0.25"
-            memory: "256M"
-          limits:
-            cpu: "1"
-            memory: "512M"
-        args:
-          - start
-        env:
-          - name: PORT
-            value: "3600"
-          - name: NODE_ENV
-            value: staging
-          - name: NODE_PATH
-            value: app/src
-          - name: LOCAL_URL
-            value: http://viirs-fires.gfw.svc.cluster.local:3600
-          - name: CT_URL
-            valueFrom:
+        - args:
+            - start
+          env:
+            - name: PORT
+              value: "3600"
+            - name: NODE_ENV
+              value: staging
+            - name: NODE_PATH
+              value: app/src
+            - name: LOCAL_URL
+              value: http://viirs-fires.gfw.svc.cluster.local:3600
+            - name: CT_URL
+              valueFrom:
                 secretKeyRef:
-                  name: mssecrets
                   key: CT_URL
-          - name: CT_TOKEN
-            valueFrom:
-                secretKeyRef:
                   name: mssecrets
+            - name: CT_TOKEN
+              valueFrom:
+                secretKeyRef:
                   key: CT_TOKEN
-          - name: CT_REGISTER_MODE
-            valueFrom:
-                secretKeyRef:
                   name: mssecrets
+            - name: CT_REGISTER_MODE
+              valueFrom:
+                secretKeyRef:
                   key: CT_REGISTER_MODE
-          - name: API_VERSION
-            valueFrom:
-                secretKeyRef:
                   name: mssecrets
+            - name: API_VERSION
+              valueFrom:
+                secretKeyRef:
                   key: API_VERSION
-          - name: DATASETS_URI
-            value: https://staging-api.globalforestwatch.org
-          - name: VIIRS_GADM_DAILY_DATASET_ID
-            value: 6e451fd5-5241-451b-872f-27f7b87e6a5d
-          - name: VIIRS_GADM_ALL_DATASET_ID
-            value: 9223ef23-7329-4987-8720-b5a87305f57d
-          - name: GADM_SUMMARY_ID
-            value: 88c862b0-37a9-4d0d-a62d-a632df08f9fa
-          - name: VIIRS_WDPA_DAILY_DATASET_ID
-            value: c8040782-9dbb-4f6a-a8f8-51d43afdf81a
-          - name: WDPA_SUMMARY_ID
-            value: 39bb6274-585f-4402-8929-f080d34c65c3
-        ports:
-          - containerPort: 3600
-        readinessProbe:
-          httpGet:
-            scheme: HTTP
-            path: /healthcheck
-            port: 3600
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-          periodSeconds: 15
-        livenessProbe:
-          httpGet:
-            scheme: HTTP
-            path: /healthcheck
-            port: 3600
-          failureThreshold: 3
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-          periodSeconds: 15
-
+                  name: mssecrets
+            - name: DATASETS_URI
+              value: https://staging-api.globalforestwatch.org
+            - name: VIIRS_GADM_DAILY_DATASET_ID
+              value: 6e451fd5-5241-451b-872f-27f7b87e6a5d
+            - name: VIIRS_GADM_ALL_DATASET_ID
+              value: 9223ef23-7329-4987-8720-b5a87305f57d
+            - name: GADM_SUMMARY_ID
+              value: 88c862b0-37a9-4d0d-a62d-a632df08f9fa
+            - name: VIIRS_WDPA_DAILY_DATASET_ID
+              value: c8040782-9dbb-4f6a-a8f8-51d43afdf81a
+            - name: WDPA_SUMMARY_ID
+              value: 39bb6274-585f-4402-8929-f080d34c65c3
+          image: vizzuality/viirs-fires
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 3600
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: viirs-fires
+          ports:
+            - containerPort: 3600
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 3600
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512M
+            requests:
+              cpu: 250m
+              memory: 256M
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
