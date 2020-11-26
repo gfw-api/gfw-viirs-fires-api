@@ -43,7 +43,7 @@ node {
           sh("echo Deploying to STAGING cluster")
           sh("kubectl config use-context ${KUBECTL_CONTEXT_PREFIX}_${CLOUD_PROJECT_NAME}_${CLOUD_PROJECT_ZONE}_${KUBE_DEV_CLUSTER}")
           sh("kubectl apply -f k8s/services/")
-          sh("kubectl apply -f k8s/staging/")
+          sh("kubectl apply -f k8s/dev/")
           sh("kubectl set image deployment ${appName} ${appName}=${imageTag} --namespace=gfw --record")
           break
 
