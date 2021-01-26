@@ -75,6 +75,23 @@ spec:
               value: 3001b513-52f5-4f58-bc92-e7f725f8aa49
             - name: WDPA_SUMMARY_ID
               value: f99c0bd8-f331-496a-b708-0142067dbd5b
+            - name: FASTLY_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  key: FASTLY_ENABLED
+                  name: mssecrets
+            - name: FASTLY_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  key: FASTLY_APIKEY
+                  name: mssecrets
+                  optional: true
+            - name: FASTLY_SERVICEID
+              valueFrom:
+                secretKeyRef:
+                  key: FASTLY_SERVICEID
+                  name: mssecrets
+                  optional: true
           image: vizzuality/viirs-fires
           imagePullPolicy: Always
           livenessProbe:
@@ -111,7 +128,9 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: regcred
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext: { }
       terminationGracePeriodSeconds: 30
