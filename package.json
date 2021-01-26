@@ -37,7 +37,7 @@
     "axios": "^0.21.1",
     "bunyan": "1.7.1",
     "config": "^3.3.2",
-    "ct-register-microservice-node": "^2.1.7",
+    "rw-api-microservice-node": "^3.2.2",
     "geojsonhint": "1.2.0",
     "jsonapi-serializer": "^3.6.6",
     "koa": "^2.13.0",

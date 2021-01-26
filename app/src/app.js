@@ -7,7 +7,7 @@ const loader = require('loader');
 const koaValidate = require('koa-validate');
 const koaSimpleHealthCheck = require('koa-simple-healthcheck');
 const ErrorSerializer = require('serializers/errorSerializer');
-const ctRegisterMicroservice = require('ct-register-microservice-node');
+const { RWAPIMicroservice } = require('rw-api-microservice-node');
 const koaCash = require('koa-cash');
 
 const app = new Koa();
@@ -72,25 +72,33 @@ app.use(koaCash({
 
 koaValidate(app);
 
+app.use(RWAPIMicroservice.bootstrap({
+    name: config.get('service.name'),
+    info: require('../microservice/register.json'),
+    swagger: require('../microservice/public-swagger.json'),
+    logger,
+    baseURL: process.env.CT_URL,
+    url: process.env.LOCAL_URL,
+    token: process.env.CT_TOKEN,
+    fastlyEnabled: process.env.FASTLY_ENABLED,
+    fastlyServiceId: process.env.FASTLY_SERVICEID,
+    fastlyAPIKey: process.env.FASTLY_APIKEY
+}));
+
 // load routes
 loader.loadRoutes(app);
 
 const port = process.env.PORT || config.get('service.port');
 
 const server = app.listen(port, () => {
-    ctRegisterMicroservice.register({
-        name: config.get('service.name'),
-        info: require('../microservice/register.json'),
-        swagger: require('../microservice/public-swagger.json'),
-        mode: (process.env.CT_REGISTER_MODE && process.env.CT_REGISTER_MODE === 'auto') ? ctRegisterMicroservice.MODE_AUTOREGISTER : ctRegisterMicroservice.MODE_NORMAL,
-        framework: ctRegisterMicroservice.KOA2,
-        app,
-        logger,
-        ctUrl: process.env.CT_URL,
-        url: process.env.LOCAL_URL,
-        token: process.env.CT_TOKEN,
-        active: true
-    });
+    if (process.env.CT_REGISTER_MODE === 'auto') {
+        RWAPIMicroservice.register().then(() => {
+            logger.info('CT registration process started');
+        }, (error) => {
+            logger.error(error);
+            process.exit(1);
+        });
+    }
 });
 
 logger.info('Server started in ', process.env.PORT);
