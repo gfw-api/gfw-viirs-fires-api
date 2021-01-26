@@ -1,6 +1,6 @@
 # GFW Fires API
 
-[![Build Status](https://travis-ci.org/gfw-api/gfw-viirs-fires-api.svg?branch=develop)](https://travis-ci.org/gfw-api/gfw-viirs-fires-api)
+[![Build Status](https://travis-ci.com/gfw-api/gfw-viirs-fires-api.svg?branch=dev)](https://travis-ci.com/gfw-api/gfw-viirs-fires-api)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/5978e5b572f6194cbe42/test_coverage)](https://codeclimate.com/github/gfw-api/gfw-viirs-fires-api/test_coverage)
 
 This repository is the microservice that it implement the viirs fires functionality and exposed the /viirs-active-fires endpoint in the api-gateway
