@@ -2,7 +2,7 @@ const logger = require('logger');
 const config = require('config');
 const Mustache = require('mustache');
 const GeostoreService = require('services/geostoreService');
-const ctRegisterMicroservice = require('ct-register-microservice-node');
+const { RWAPIMicroservice } = require('rw-api-microservice-node');
 
 const NUM_ALERTS = `SELECT SUM(alert__count) AS value FROM table
     WHERE (confidence__cat = 'h' OR confidence__cat = 'n') 
@@ -95,7 +95,7 @@ class DatasetService {
         }
 
         try {
-            const result = await ctRegisterMicroservice.requestToMicroservice({
+            const result = await RWAPIMicroservice.requestToMicroservice({
                 uri,
                 method: 'GET',
                 json: true

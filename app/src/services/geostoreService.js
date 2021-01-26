@@ -1,6 +1,6 @@
 const logger = require('logger');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
-const ctRegisterMicroservice = require('ct-register-microservice-node');
+const { RWAPIMicroservice } = require('rw-api-microservice-node');
 
 const deserializer = async (obj) => new JSONAPIDeserializer({ keyForAttribute: 'camelCase' }).deserialize(obj);
 
@@ -11,7 +11,7 @@ class GeostoreService {
         let result;
 
         try {
-            result = await ctRegisterMicroservice.requestToMicroservice({
+            result = await RWAPIMicroservice.requestToMicroservice({
                 uri: `/geostore/${path}`,
                 method: 'GET',
                 json: true
@@ -57,7 +57,7 @@ class GeostoreService {
         let result;
 
         try {
-            result = await ctRegisterMicroservice.requestToMicroservice({
+            result = await RWAPIMicroservice.requestToMicroservice({
                 uri: `/geostore`,
                 method: 'POST',
                 json: true,
