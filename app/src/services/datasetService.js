@@ -127,7 +127,7 @@ class DatasetService {
 
             if (adm2) {
                 params.adm2 = adm2;
-                alertQuery += ` AND adm1 = '{{adm2}}'`;
+                alertQuery += ` AND adm2 = '{{adm2}}'`;
                 areaQuery += ` AND adm2 = '{{adm2}}'`;
             }
         }
