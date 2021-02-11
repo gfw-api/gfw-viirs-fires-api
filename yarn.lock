@@ -1680,7 +1680,7 @@ fast-safe-stringify@^2.0.7:
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.0.7.tgz#124aa885899261f68aedb42a7c080de9da608743"
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
-"fastly-promises@github:tiagojsag/fastly-promises#master":
+fastly-promises@tiagojsag/fastly-promises#master:
   version "0.0.0-semantically-released"
   resolved "https://codeload.github.com/tiagojsag/fastly-promises/tar.gz/14470364f0d4e62b8ff99c8f7e7dd7cb27039242"
   dependencies:
@@ -4629,10 +4629,10 @@ run-async@^2.4.0:
   dependencies:
     is-promise "^2.1.0"
 
-rw-api-microservice-node@^3.2.2:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/rw-api-microservice-node/-/rw-api-microservice-node-3.2.2.tgz#5566d2d84c60b057e1ef25774acb3c94fab00ed3"
-  integrity sha512-ydrcCapbSILJs8d1eq0xYAzwszu3k64AVp6szKCXYlbBbw5/TlrMkdJ872Y9syLCYesuuVkG4/fnd4KF0Fs8ww==
+rw-api-microservice-node@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/rw-api-microservice-node/-/rw-api-microservice-node-3.3.0.tgz#826ca96249f1f08aac55b7c9fe9ca3fec0303fcd"
+  integrity sha512-ocvdMuA3WCKWk/Zx9noRQEcmSdc+BP6ClAcmBpWqB5kdIni/4S2R1LpIIKO5rSPjPZye2/LZ33oqvVMI2rSL4w==
   dependencies:
     axios "^0.21.1"
     fastly-promises tiagojsag/fastly-promises#master
