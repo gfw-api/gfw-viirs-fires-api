@@ -2,6 +2,7 @@ const logger = require('logger');
 const config = require('config');
 const Mustache = require('mustache');
 const GeostoreService = require('services/geostoreService');
+const { RWAPIMicroservice } = require('rw-api-microservice-node');
 
 const NUM_ALERTS = `SELECT SUM(alert__count) AS value FROM table
     WHERE (confidence__cat = 'h' OR confidence__cat = 'n') 
@@ -52,7 +53,7 @@ const getPeriodText = (period) => {
 };
 
 // eslint-disable-next-line consistent-return
-const getDownloadUrls = (query, params, datasetId, geostore=null) => {
+const getDownloadUrls = (query, params, datasetId, geostore = null) => {
     try {
         const formats = ['csv', 'geojson', 'json'];
         const download = {};
@@ -85,27 +86,29 @@ const getQueryForGroup = (query) => {
 
 class DatasetService {
 
-    static* queryDataset(dataset, sql, params = {}, geostore = null) {
+    static async queryDataset(dataset, sql, params = {}, geostore = null) {
         const sqlRendered = Mustache.render(sql, params);
         logger.debug('Running dataset with sql: %s', sqlRendered);
         let uri = `/query/${dataset}?sql=${encodeURIComponent(sqlRendered)}`;
         if (geostore) {
             uri += `&geostore=${geostore}`;
         }
-        const result = yield require('vizz.microservice-client').requestToMicroservice({
-            uri,
-            method: 'GET',
-            json: true
-        });
-        if (result.statusCode !== 200) {
+
+        try {
+            const result = await RWAPIMicroservice.requestToMicroservice({
+                uri,
+                method: 'GET',
+                json: true
+            });
+            return result;
+        } catch (err) {
             logger.error('Error running query:');
-            logger.error(result);
+            logger.error(err);
             return null;
         }
-        return yield result.body;
     }
 
-    static* getAdm(iso, forSubscription, period = defaultDate(), group = false, adm1 = null, adm2 = null) {
+    static async getAdm(iso, forSubscription, period = defaultDate(), group = false, adm1 = null, adm2 = null) {
         logger.debug('Obtaining national of iso %s and period %s', iso, period);
         const periods = period.split(',');
         const params = {
@@ -140,21 +143,21 @@ class DatasetService {
 
         logger.debug(`All the way home`);
 
-        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
+        return DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery);
     }
 
-    static* getUse(useName, useTable, id, forSubscription, period = defaultDate(), group = false) {
+    static async getUse(useName, useTable, id, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining use with id %s', id);
 
         // no special table for use, so just get geostore hash and do query on all points with geostore filter
-        const geostore = yield GeostoreService.getGeostoreByUse(useName, id);
+        const geostore = await GeostoreService.getGeostoreByUse(useName, id);
         if (geostore) {
-            return yield DatasetService.getWorld(geostore.data.id, forSubscription, period, group);
+            return DatasetService.getWorld(geostore.data.id, forSubscription, period, group);
         }
         return null;
     }
 
-    static* getWdpa(wdpaid, forSubscription, period = defaultDate(), group = false) {
+    static async getWdpa(wdpaid, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining wpda of id %s', wdpaid);
         const periods = period.split(',');
         const params = {
@@ -175,14 +178,14 @@ class DatasetService {
             summary: config.get('datasets.wdpa_summary_id')
         };
 
-        const geostore = yield GeostoreService.getGeostoreByWdpa(wdpaid)
-        const geostoreHash = geostore.id
+        const geostore = await GeostoreService.getGeostoreByWdpa(wdpaid);
+        const geostoreHash = geostore.id;
 
-        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery, geostoreHash);
+        return DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, areaQuery, geostoreHash);
     }
 
 
-    static* getWorld(hashGeoStore, forSubscription, period = defaultDate(), group = false) {
+    static async getWorld(hashGeoStore, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Obtaining world with hashGeoStore %s', hashGeoStore);
         const periods = period.split(',');
         const params = {
@@ -195,40 +198,40 @@ class DatasetService {
             all: config.get('datasets.viirs_gadm_all_id'),
         };
 
-        return yield DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, null, hashGeoStore);
+        return DatasetService.getViirsAlerts(alertQuery, params, datasetIds, period, forSubscription, group, null, hashGeoStore);
     }
 
-    static* getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), group = false) {
+    static async getWorldWithGeojson(geojson, forSubscription, period = defaultDate(), group = false) {
         logger.debug('Executing query with geojson', geojson);
-        const newGeostore = yield GeostoreService.createGeostore(geojson);
+        const newGeostore = await GeostoreService.createGeostore(geojson);
 
         logger.debug(`Create new geostore: ${JSON.stringify(newGeostore)}`);
         const geostoreHash = newGeostore.id;
-        return yield this.getWorld(geostoreHash, forSubscription, period, group);
+        return this.getWorld(geostoreHash, forSubscription, period, group);
     }
 
-    static* getViirsAlerts(alertQuery, queryParams, datasetIds, period, forSubscription, group, areaQuery = null, geostore = null) {
+    static async getViirsAlerts(alertQuery, queryParams, datasetIds, period, forSubscription, group, areaQuery = null, geostore = null) {
         if (forSubscription) {
             const query = getURLForSubscription(alertQuery);
-            const result = yield DatasetService.queryDataset(datasetIds.all, query, queryParams, geostore);
+            const result = await DatasetService.queryDataset(datasetIds.all, query, queryParams, geostore);
             return result.data;
         }
         if (group) {
             const query = getQueryForGroup(alertQuery);
             let result = null;
             if (datasetIds.daily) {
-                result = yield DatasetService.queryDataset(datasetIds.daily, query, queryParams);
+                result = await DatasetService.queryDataset(datasetIds.daily, query, queryParams);
             } else {
-                result = yield DatasetService.queryDataset(datasetIds.all, query, queryParams, geostore);
+                result = await DatasetService.queryDataset(datasetIds.all, query, queryParams, geostore);
             }
             return result.data;
         }
 
         let numAlertsResponse = null;
         if (datasetIds.daily) {
-            numAlertsResponse = yield DatasetService.queryDataset(datasetIds.daily, alertQuery, queryParams);
+            numAlertsResponse = await DatasetService.queryDataset(datasetIds.daily, alertQuery, queryParams);
         } else {
-            numAlertsResponse = yield DatasetService.queryDataset(datasetIds.all, alertQuery, queryParams, geostore);
+            numAlertsResponse = await DatasetService.queryDataset(datasetIds.all, alertQuery, queryParams, geostore);
         }
 
         let numAlerts = 0;
@@ -238,12 +241,12 @@ class DatasetService {
 
         let areaHa = null;
         if (areaQuery) {
-            const areaHaResponse = yield DatasetService.queryDataset(datasetIds.summary, areaQuery, queryParams);
+            const areaHaResponse = await DatasetService.queryDataset(datasetIds.summary, areaQuery, queryParams);
             if (areaHaResponse && areaHaResponse.data) {
                 areaHa = areaHaResponse.data[0].value;
             }
         } else if (geostore) {
-            const geostoreResponse = yield GeostoreService.getGeostoreByHash(geostore);
+            const geostoreResponse = await GeostoreService.getGeostoreByHash(geostore);
             if (geostoreResponse) {
                 areaHa = geostoreResponse.areaHa;
             }
@@ -257,12 +260,12 @@ class DatasetService {
         return result;
     }
 
-    static* latest(limit = 1) {
+    static async latest(limit = 1) {
         logger.debug('Obtaining latest with limit %s', limit);
         const params = {
             limit
         };
-        const response = yield DatasetService.queryDataset(config.get('datasets.viirs_gadm_all_id'), LATEST, params);
+        const response = await DatasetService.queryDataset(config.get('datasets.viirs_gadm_all_id'), LATEST, params);
         logger.debug('response', response);
         if (response.data && response.data.length > 0) {
             // for some reason DISTINCT doesn't work for ES, so just returning latest

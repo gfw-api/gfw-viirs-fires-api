@@ -1,70 +1,78 @@
 const logger = require('logger');
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
+const { RWAPIMicroservice } = require('rw-api-microservice-node');
 
-
-const deserializer = (obj) => (callback) => {
-    new JSONAPIDeserializer({ keyForAttribute: 'camelCase' }).deserialize(obj, callback);
-};
-
+const deserializer = async (obj) => new JSONAPIDeserializer({ keyForAttribute: 'camelCase' }).deserialize(obj);
 
 class GeostoreService {
 
-    static* getGeostore(path) {
+    static async getGeostore(path) {
         logger.debug('Obtaining geostore with path %s', path);
-        const result = yield require('vizz.microservice-client').requestToMicroservice({
-            uri: `/geostore/${path}`,
-            method: 'GET',
-            json: true
-        });
-        if (result.statusCode !== 200) {
+        let result;
+
+        try {
+            result = await RWAPIMicroservice.requestToMicroservice({
+                uri: `/geostore/${path}`,
+                method: 'GET',
+                json: true
+            });
+        } catch (err) {
             logger.error('Error obtaining geostore:');
-            logger.error(result);
+            logger.error(err);
             return null;
+
         }
-        return yield deserializer(result.body);
+
+        return deserializer(result);
     }
 
-    static* getGeostoreByHash(hash) {
+    static async getGeostoreByHash(hash) {
         logger.debug('Getting geostore');
-        return yield GeostoreService.getGeostore(hash);
+        return GeostoreService.getGeostore(hash);
     }
 
-    static* getGeostoreByIso(iso) {
+    static async getGeostoreByIso(iso) {
         logger.debug('Getting geostore by iso');
-        return yield GeostoreService.getGeostore(`admin/${iso}`);
+        return GeostoreService.getGeostore(`admin/${iso}`);
     }
 
-    static* getGeostoreByIsoAndId(iso, id1) {
+    static async getGeostoreByIsoAndId(iso, id1) {
         logger.debug('Getting geostore by iso and region');
-        return yield GeostoreService.getGeostore(`admin/${iso}/${id1}`);
+        return GeostoreService.getGeostore(`admin/${iso}/${id1}`);
     }
 
-    static* getGeostoreByUse(useTable, id) {
+    static async getGeostoreByUse(useTable, id) {
         logger.debug('Getting geostore by use');
-        return yield GeostoreService.getGeostore(`use/${useTable}/${id}`);
+        return GeostoreService.getGeostore(`use/${useTable}/${id}`);
     }
 
-    static* getGeostoreByWdpa(wdpaid) {
+    static async getGeostoreByWdpa(wdpaid) {
         logger.debug('Getting geostore by use');
-        return yield GeostoreService.getGeostore(`wdpa/${wdpaid}`);
+        return GeostoreService.getGeostore(`wdpa/${wdpaid}`);
     }
 
-    static* createGeostore(geojson) {
+    static async createGeostore(geojson) {
         logger.debug('Create geostore from geojson: %s', geojson);
-        const result = yield require('vizz.microservice-client').requestToMicroservice({
-            uri: `/geostore`,
-            method: 'POST',
-            json: true,
-            body: {
-                geojson
-            }
-        });
-        if (result.statusCode !== 200) {
-            logger.error('Error creating geostore:');
-            logger.error(result);
+
+        let result;
+
+        try {
+            result = await RWAPIMicroservice.requestToMicroservice({
+                uri: `/geostore`,
+                method: 'POST',
+                json: true,
+                body: {
+                    geojson
+                }
+            });
+        } catch (err) {
+            logger.error('Error obtaining geostore:');
+            logger.error(err);
             return null;
+
         }
-        return yield deserializer(result.body);
+
+        return deserializer(result);
     }
 
 }
