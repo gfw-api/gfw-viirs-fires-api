@@ -105,9 +105,7 @@ const init: () => Promise<IInit> = async (): Promise<IInit> => {
 
         const port: string = config.get('service.port') || '9000';
 
-        const server: Server = app.listen(port, () => {
-            logger.info(`Server started in port:${port}`);
-        });
+        const server: Server = app.listen(port);
 
         resolve({ app, server });
 
