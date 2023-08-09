@@ -2,6 +2,9 @@
   "logger": {
     "level": "LOGGER_LEVEL"
   },
+  "service": {
+    "port": "PORT"
+  },
   "datasets": {
     "uri": "DATASETS_URI",
     "viirs_gadm_daily_id": "VIIRS_GADM_DAILY_DATASET_ID",

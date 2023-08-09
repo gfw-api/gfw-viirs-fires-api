@@ -13,7 +13,7 @@ insert_final_newline = true
 [*.js]
 charset = utf-8
 
-# 2 space indentation
+# 4 space indentation
 [**/*.js]
 indent_style = space
 indent_size = 4

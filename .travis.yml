@@ -1,20 +1,21 @@
 language: node_js
 node_js:
-  - "12"
+  - "20.4"
 cache:
   directories:
-  - "node_modules"
+    - "node_modules"
 env:
   global:
     - CC_TEST_REPORTER_ID=6a16da2ee2acea0429fcfa71fedff1b357bfe0a7f5f6afaacf96893000f0fab0
     - NODE_ENV=test
     - PORT=5037
-    - API_VERSION=v1
-    - CT_REGISTER_MODE=auto
     - LOCAL_URL=http://127.0.0.1:5037
-    - CT_URL=http://127.0.0.1:9000
-    - CT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Im1pY3Jvc2VydmljZSIsImNyZWF0ZWRBdCI6IjIwMTYtMDktMTQifQ.IRCIRm1nfIQTfda_Wb6Pg-341zhV8soAgzw7dd5HxxQ
+    - GATEWAY_URL=http://127.0.0.1:9000
+    - MICROSERVICE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Im1pY3Jvc2VydmljZSIsImNyZWF0ZWRBdCI6IjIwMTYtMDktMTQifQ.IRCIRm1nfIQTfda_Wb6Pg-341zhV8soAgzw7dd5HxxQ
     - FASTLY_ENABLED=false
+    - AWS_REGION=us-east-1
+    - AWS_ACCESS_KEY_ID=test
+    - AWS_SECRET_ACCESS_KEY=test
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter

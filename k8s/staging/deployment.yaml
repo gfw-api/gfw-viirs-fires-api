@@ -43,25 +43,15 @@ spec:
               value: app/src
             - name: LOCAL_URL
               value: http://viirs-fires.gfw.svc.cluster.local:3600
-            - name: CT_URL
+            - name: GATEWAY_URL
               valueFrom:
                 secretKeyRef:
-                  key: CT_URL
+                  key: GATEWAY_URL
                   name: mssecrets
-            - name: CT_TOKEN
+            - name: MICROSERVICE_TOKEN
               valueFrom:
                 secretKeyRef:
-                  key: CT_TOKEN
-                  name: mssecrets
-            - name: CT_REGISTER_MODE
-              valueFrom:
-                secretKeyRef:
-                  key: CT_REGISTER_MODE
-                  name: mssecrets
-            - name: API_VERSION
-              valueFrom:
-                secretKeyRef:
-                  key: API_VERSION
+                  key: MICROSERVICE_TOKEN
                   name: mssecrets
             - name: DATASETS_URI
               value: https://staging-api.globalforestwatch.org
@@ -92,6 +82,16 @@ spec:
                   key: FASTLY_SERVICEID
                   name: mssecrets
                   optional: true
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  key: AWS_REGION
+                  name: mssecrets
+            - name: REQUIRE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: REQUIRE_API_KEY
+                  name: mssecrets
           image: gfwdockerhub/viirs-fires
           imagePullPolicy: Always
           livenessProbe:
